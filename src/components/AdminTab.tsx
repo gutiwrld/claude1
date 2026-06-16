@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { ALL_TEAMS } from "../data/teams";
 import type { Match } from "../lib/types";
+import { errMsg } from "../lib/errors";
 import { Banner, Button, Pill } from "./ui";
 
 function AdminMatchRow({ match }: { match: Match }) {
@@ -17,7 +18,8 @@ function AdminMatchRow({ match }: { match: Match }) {
       const { error: err } = await supabase.from("matches").update(patch).eq("id", match.id);
       if (err) throw err;
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al actualizar.");
+      console.error("[Porra] Error al actualizar el partido:", e);
+      setError(errMsg(e));
     } finally {
       setBusy(false);
     }
@@ -139,7 +141,8 @@ function AddKnockout({ poolId, nextSortOrder }: { poolId: string; nextSortOrder:
       if (err) throw err;
       setOk(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo añadir el partido.");
+      console.error("[Porra] Error al añadir el partido:", e);
+      setError(`No se pudo añadir el partido: ${errMsg(e)}`);
     } finally {
       setBusy(false);
     }

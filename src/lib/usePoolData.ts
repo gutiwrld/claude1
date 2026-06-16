@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "./supabase";
+import { errMsg } from "./errors";
 import type { Match, Player, Pool, Prediction } from "./types";
 
 export interface PoolData {
@@ -62,7 +63,8 @@ export function usePoolData(poolId: string | null): PoolData {
       setMatches((matchesRes.data ?? []) as Match[]);
       setPredictions((predsRes.data ?? []) as Prediction[]);
     } catch (e) {
-      if (alive.current) setError(e instanceof Error ? e.message : "Error cargando los datos");
+      console.error("[Porra] Error cargando los datos:", e);
+      if (alive.current) setError(errMsg(e));
     } finally {
       if (alive.current) setLoading(false);
     }

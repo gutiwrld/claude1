@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { saveIdentity } from "../lib/storage";
 import type { Identity } from "../lib/storage";
 import type { Player, Pool } from "../lib/types";
+import { errMsg } from "../lib/errors";
 import { Banner, Button, EmptyState } from "./ui";
 
 export function JoinPool({
@@ -46,7 +47,8 @@ export function JoinPool({
       if (err) throw err;
       enterAs(data as Player);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo crear el jugador.");
+      console.error("[Porra] Error al crear el jugador:", e);
+      setError(`No se pudo crear el jugador: ${errMsg(e)}`);
     } finally {
       setBusy(false);
     }

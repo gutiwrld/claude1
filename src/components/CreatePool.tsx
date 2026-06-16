@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { buildGroupMatches } from "../lib/matches";
 import { saveIdentity } from "../lib/storage";
 import type { Identity } from "../lib/storage";
+import { errMsg } from "../lib/errors";
 import { Banner, Button } from "./ui";
 
 export function CreatePool({ onCreated }: { onCreated: (poolId: string, id: Identity) => void }) {
@@ -48,7 +49,8 @@ export function CreatePool({ onCreated }: { onCreated: (poolId: string, id: Iden
       saveIdentity(identity);
       onCreated(pool.id, identity);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo crear la porra.");
+      console.error("[Porra] Error al crear la porra:", e);
+      setError(`No se pudo crear la porra: ${errMsg(e)}`);
     } finally {
       setBusy(false);
     }

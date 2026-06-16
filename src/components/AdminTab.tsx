@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { ALL_TEAMS } from "../data/teams";
-import { defaultScheduleUpdates } from "../lib/matches";
+import { buildGroupMatches } from "../lib/matches";
 import type { Match } from "../lib/types";
 import { errMsg } from "../lib/errors";
 import { toLocalInput, fromLocalInput } from "../lib/dates";
@@ -244,27 +244,35 @@ function AddKnockout({ poolId, nextSortOrder }: { poolId: string; nextSortOrder:
   );
 }
 
-function AutoSchedule({ matches }: { matches: Match[] }) {
+function ReloadSchedule({ matches, poolId }: { matches: Match[]; poolId: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<number | null>(null);
+  const [done, setDone] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
-  const pending = useMemo(() => defaultScheduleUpdates(matches), [matches]);
+  const groupCount = useMemo(() => matches.filter((m) => !m.knockout).length, [matches]);
 
-  async function generate() {
+  async function reload() {
     setBusy(true);
     setError(null);
-    setDone(null);
+    setDone(false);
     try {
-      // Aplica las fechas por defecto en paralelo (solo a los partidos sin fecha).
-      const results = await Promise.all(
-        pending.map((u) => supabase.from("matches").update({ kickoff: u.kickoff }).eq("id", u.id))
-      );
-      const firstErr = results.find((r) => r.error)?.error;
-      if (firstErr) throw firstErr;
-      setDone(pending.length);
+      // Borra los partidos de grupos actuales (y, en cascada, sus pronósticos)
+      // y los recrea desde el calendario oficial con emparejamientos y horas reales.
+      const { error: delErr } = await supabase
+        .from("matches")
+        .delete()
+        .eq("pool_id", poolId)
+        .eq("knockout", false);
+      if (delErr) throw delErr;
+
+      const { error: insErr } = await supabase.from("matches").insert(buildGroupMatches(poolId));
+      if (insErr) throw insErr;
+
+      setDone(true);
+      setConfirming(false);
     } catch (e) {
-      console.error("[Porra] Error generando el calendario:", e);
+      console.error("[Porra] Error recargando el calendario:", e);
       setError(errMsg(e));
     } finally {
       setBusy(false);
@@ -273,17 +281,33 @@ function AutoSchedule({ matches }: { matches: Match[] }) {
 
   return (
     <section className="space-y-3 rounded-2xl border border-pitch-700 bg-pitch-900/60 p-4">
-      <h3 className="text-sm font-bold uppercase tracking-wide text-chalk/60">Calendario automático</h3>
+      <h3 className="text-sm font-bold uppercase tracking-wide text-chalk/60">Calendario oficial</h3>
       <p className="text-xs text-chalk/60">
-        Asigna fechas y horas por defecto (tipo Mundial: J1, J2 y J3 en días sucesivos) a los{" "}
-        <span className="font-semibold text-chalk">{pending.length}</span> partidos de grupos que aún no tienen fecha. No toca
-        los que ya tienen fecha ni las eliminatorias. Luego puedes ajustar cualquiera a mano.
+        Recrea los <span className="font-semibold text-chalk">{groupCount}</span> partidos de la fase de grupos con los
+        emparejamientos, local/visitante y fechas/horas <span className="font-semibold text-chalk">oficiales</span> del
+        Mundial 2026 (hora de España). No toca las eliminatorias que hayas añadido.
       </p>
+      <Banner kind="error">
+        ⚠️ Esto borra los partidos de grupos actuales y <strong>los pronósticos ya hechos sobre ellos</strong>. Úsalo para
+        dejar el calendario correcto al principio.
+      </Banner>
       {error && <Banner kind="error">{error}</Banner>}
-      {done !== null && <Banner kind="success">Calendario generado para {done} partido(s).</Banner>}
-      <Button onClick={generate} disabled={busy || pending.length === 0} className="w-full">
-        {busy ? "Generando…" : pending.length === 0 ? "Todo tiene fecha ✓" : `Generar fechas (${pending.length})`}
-      </Button>
+      {done && <Banner kind="success">Calendario oficial cargado. Los partidos ya salen con sus fechas reales.</Banner>}
+
+      {confirming ? (
+        <div className="flex gap-2">
+          <Button variant="danger" onClick={reload} disabled={busy} className="flex-1">
+            {busy ? "Cargando…" : "Sí, recargar"}
+          </Button>
+          <Button variant="ghost" onClick={() => setConfirming(false)} disabled={busy} className="flex-1">
+            Cancelar
+          </Button>
+        </div>
+      ) : (
+        <Button onClick={() => setConfirming(true)} className="w-full">
+          Cargar calendario oficial
+        </Button>
+      )}
     </section>
   );
 }
@@ -301,7 +325,7 @@ export function AdminTab({ matches, poolId }: { matches: Match[]; poolId: string
         para todos.
       </Banner>
 
-      <AutoSchedule matches={matches} />
+      <ReloadSchedule matches={matches} poolId={poolId} />
 
       <AddKnockout poolId={poolId} nextSortOrder={nextSortOrder} />
 

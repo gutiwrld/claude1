@@ -24,3 +24,8 @@ export const ALL_TEAMS: Team[] = Object.values(GROUPS)
   .flat()
   .map(([name, flag]) => ({ name, flag }))
   .sort((a, b) => a.name.localeCompare(b.name, "es"));
+
+// Bandera por nombre de equipo (para construir partidos desde el calendario).
+export const FLAG_BY_NAME: Record<string, string> = Object.fromEntries(
+  Object.values(GROUPS).flat()
+);

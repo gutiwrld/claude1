@@ -61,6 +61,29 @@ npm test         # comprueba los 5 casos de puntuación
 
 Un pronóstico solo es editable si el partido **no está cerrado** y **no tiene resultado**.
 
+## Resultados automáticos vía API (opcional)
+
+Hay una **Netlify Function** (`netlify/functions/sync-results.mts`) que trae los marcadores reales
+desde [football-data.org](https://www.football-data.org) (plan gratuito) y los aplica en Supabase.
+Se ejecuta sola **cada 15 min** y también desde el botón *"Sincronizar resultados ahora"* en Admin.
+
+Para activarla, en **Netlify → Site configuration → Environment variables** añade:
+
+| Variable | Valor |
+|----------|-------|
+| `SUPABASE_URL` | misma URL del proyecto Supabase |
+| `SUPABASE_ANON_KEY` | la anon key (las políticas RLS son abiertas) |
+| `FOOTBALL_DATA_TOKEN` | token gratuito de football-data.org (tras registrarte) |
+| `FOOTBALL_DATA_COMPETITION` | *(opcional)* código de competición, por defecto `WC` |
+
+Notas:
+- El cruce se hace por **pareja de equipos** (sin importar local/visitante). Los nombres de la API
+  (inglés) se mapean a los nombres en español en `ALIASES` dentro de la función; si la API usa un
+  nombre que no está en el mapa, ese partido aparece en `unmatched` en la respuesta para que amplíes
+  el mapa.
+- Solo funciona cuando football-data.org tiene esos partidos terminados. Mientras tanto, el admin
+  puede meter resultados a mano (la suma de puntos y el cierre siguen siendo automáticos).
+
 ## Nota de seguridad
 
 Las políticas RLS son **abiertas** a propósito: es una porra privada entre amigos protegida por el enlace de la pool y el

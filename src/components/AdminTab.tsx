@@ -438,6 +438,47 @@ function BracketPanel({ matches, poolId }: { matches: Match[]; poolId: string })
   );
 }
 
+function SyncResults() {
+  const [busy, setBusy] = useState(false);
+  const [out, setOut] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function syncNow() {
+    setBusy(true); setError(null); setOut(null);
+    try {
+      const res = await fetch("/.netlify/functions/sync-results");
+      const text = await res.text();
+      if (!res.ok) throw new Error(text || `HTTP ${res.status}`);
+      const json = JSON.parse(text) as { updated?: number; apiFinished?: number; reason?: string };
+      if (json.reason) setError(json.reason);
+      else setOut(`Sincronizado: ${json.updated ?? 0} resultado(s) actualizados de ${json.apiFinished ?? 0} terminados.`);
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? `${e.message} — ¿está desplegado en Netlify y configurada la API? (en local no existe la función)`
+          : "Error desconocido"
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="space-y-3 rounded-2xl border border-pitch-700 bg-pitch-900/60 p-4">
+      <h3 className="text-sm font-bold uppercase tracking-wide text-chalk/60">Resultados automáticos (API)</h3>
+      <p className="text-xs text-chalk/60">
+        Trae los marcadores reales desde football-data.org y los aplica solo (se ejecuta también cada 15 min). Requiere
+        configurar las variables de entorno en Netlify (ver README). Si la API no tiene aún estos partidos, no cambia nada.
+      </p>
+      {error && <Banner kind="error">{error}</Banner>}
+      {out && <Banner kind="success">{out}</Banner>}
+      <Button variant="subtle" onClick={syncNow} disabled={busy} className="w-full">
+        {busy ? "Sincronizando…" : "Sincronizar resultados ahora"}
+      </Button>
+    </section>
+  );
+}
+
 export function AdminTab({ matches, poolId }: { matches: Match[]; poolId: string }) {
   const nextSortOrder = useMemo(
     () => matches.reduce((max, m) => Math.max(max, m.sort_order), 0) + 1,
@@ -454,6 +495,8 @@ export function AdminTab({ matches, poolId }: { matches: Match[]; poolId: string
       <ReloadSchedule matches={matches} poolId={poolId} />
 
       <BracketPanel matches={matches} poolId={poolId} />
+
+      <SyncResults />
 
       <AddKnockout poolId={poolId} nextSortOrder={nextSortOrder} />
 

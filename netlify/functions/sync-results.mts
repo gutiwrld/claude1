@@ -14,7 +14,8 @@
 // nombre que devuelve la API no está en el mapa de abajo, ese partido sale en
 // "unmatched" en la respuesta para que amplíes el mapa.
 
-import { createClient } from "@supabase/supabase-js";
+// Acceso a Supabase por su API REST (PostgREST) con fetch: así la función no
+// depende de @supabase/supabase-js ni de WebSocket nativo en el runtime.
 
 // Nombre canónico (español, como en la BD) -> posibles nombres de la API.
 const ALIASES: Record<string, string[]> = {
@@ -121,16 +122,18 @@ async function sync() {
   };
   const apiMatches = data.matches ?? [];
 
+  const sbHeaders = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` };
+
   // 2) Partidos de Supabase aún sin resultado, indexados por pareja de equipos.
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  const { data: dbRows, error } = await supabase
-    .from("matches")
-    .select("id, home_name, away_name, result_home, result_away")
-    .is("result_home", null);
-  if (error) return { ok: false, reason: `Supabase: ${error.message}` };
+  const selUrl = `${SUPABASE_URL}/rest/v1/matches?result_home=is.null&select=id,home_name,away_name,result_home,result_away`;
+  const selRes = await fetch(selUrl, { headers: sbHeaders });
+  if (!selRes.ok) {
+    return { ok: false, reason: `Supabase respondió ${selRes.status}`, body: await selRes.text() };
+  }
+  const dbRows = (await selRes.json()) as DbMatch[];
 
   const byPair = new Map<string, DbMatch[]>();
-  for (const m of (dbRows ?? []) as DbMatch[]) {
+  for (const m of dbRows) {
     const k = pairKey(m.home_name, m.away_name);
     (byPair.get(k) ?? byPair.set(k, []).get(k)!).push(m);
   }
@@ -165,7 +168,11 @@ async function sync() {
       const home = row.home_name === esHome ? ftH : ftA;
       const away = row.home_name === esHome ? ftA : ftH;
       updates.push(
-        supabase.from("matches").update({ result_home: home, result_away: away, locked: true }).eq("id", row.id)
+        fetch(`${SUPABASE_URL}/rest/v1/matches?id=eq.${row.id}`, {
+          method: "PATCH",
+          headers: { ...sbHeaders, "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({ result_home: home, result_away: away, locked: true }),
+        })
       );
       updated++;
     }

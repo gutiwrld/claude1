@@ -13,7 +13,27 @@ export interface MatchSeed {
   locked: boolean;
   result_home: null;
   result_away: null;
+  kickoff: null;
   sort_order: number;
+}
+
+/**
+ * Orden de los partidos: primero por fecha de inicio (kickoff) ascendente;
+ * los que aún no tienen fecha van al final; empate por sort_order.
+ */
+export function compareMatches(
+  a: { kickoff: string | null; sort_order: number },
+  b: { kickoff: string | null; sort_order: number }
+): number {
+  if (a.kickoff && b.kickoff) {
+    const diff = new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime();
+    if (diff !== 0) return diff;
+  } else if (a.kickoff && !b.kickoff) {
+    return -1;
+  } else if (!a.kickoff && b.kickoff) {
+    return 1;
+  }
+  return a.sort_order - b.sort_order;
 }
 
 // Round-robin estándar para 4 equipos [0,1,2,3].
@@ -58,6 +78,7 @@ export function buildGroupMatches(poolId: string): MatchSeed[] {
           locked: false,
           result_home: null,
           result_away: null,
+          kickoff: null,
           sort_order: order++,
         });
       }

@@ -27,6 +27,7 @@ export interface Match {
   locked: boolean;
   result_home: number | null;
   result_away: number | null;
+  kickoff: string | null; // ISO timestamptz; null si aún no tiene fecha
   sort_order: number;
   created_at: string;
 }

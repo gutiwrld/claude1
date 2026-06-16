@@ -33,6 +33,7 @@ create table matches (
   locked boolean not null default false,
   result_home int,                   -- null mientras no haya resultado
   result_away int,
+  kickoff timestamptz,               -- fecha y hora del partido (null = por programar)
   sort_order int not null default 0,
   created_at timestamptz default now()
 );

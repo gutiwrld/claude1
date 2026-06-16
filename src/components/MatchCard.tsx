@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { scoreFor } from "../lib/score";
+import { timeLabel } from "../lib/dates";
 import type { Match, Player, Prediction, ScoreRules } from "../lib/types";
 import { Pill } from "./ui";
 import { ScoreStepper } from "./ScoreStepper";
@@ -92,7 +93,8 @@ export function MatchCard({
     <article className="rounded-2xl border border-pitch-700 bg-pitch-900/60 p-4">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-xs font-semibold uppercase tracking-wide text-chalk/50">
-          {match.grp ? `Grupo ${match.grp}` : match.jornada}
+          {match.grp ? `Grupo ${match.grp} · ${match.jornada}` : match.jornada}
+          {match.kickoff && <span className="ml-2 text-flare">{timeLabel(match.kickoff)}</span>}
         </span>
         {hasResult ? <Pill tone="final">Final</Pill> : match.locked ? <Pill tone="closed">Cerrado</Pill> : <Pill tone="open">Abierto</Pill>}
       </div>
@@ -144,27 +146,25 @@ export function MatchCard({
         {hasResult && myPts !== null && <PointsBadge pts={myPts} />}
       </div>
 
-      {/* Ver porras de todos (solo tiene sentido con resultado o partido cerrado) */}
-      {(hasResult || match.locked) && (
-        <details className="mt-3 border-t border-pitch-700 pt-2">
-          <summary className="cursor-pointer list-none text-xs font-semibold text-grass-400">Ver porras ▾</summary>
-          <ul className="mt-2 space-y-1">
-            {players.map((p) => {
-              const pred = predByPlayer.get(p.id);
-              const pts = scoreFor(pred ?? null, result, rules);
-              return (
-                <li key={p.id} className="flex items-center justify-between text-xs">
-                  <span className="text-chalk/80">{p.name}</span>
-                  <span className="flex items-center gap-2">
-                    <span className="tnum text-chalk/60">{pred ? `${pred.home}-${pred.away}` : "—"}</span>
-                    {pts !== null && <PointsBadge pts={pts} />}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </details>
-      )}
+      {/* Ver porras de todos: visible siempre para que todos vean los pronósticos */}
+      <details className="mt-3 border-t border-pitch-700 pt-2">
+        <summary className="cursor-pointer list-none text-xs font-semibold text-grass-400">Ver porras ▾</summary>
+        <ul className="mt-2 space-y-1">
+          {players.map((p) => {
+            const pred = predByPlayer.get(p.id);
+            const pts = scoreFor(pred ?? null, result, rules);
+            return (
+              <li key={p.id} className="flex items-center justify-between text-xs">
+                <span className="text-chalk/80">{p.name}</span>
+                <span className="flex items-center gap-2">
+                  <span className="tnum text-chalk/60">{pred ? `${pred.home}-${pred.away}` : "—"}</span>
+                  {pts !== null && <PointsBadge pts={pts} />}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </details>
     </article>
   );
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "./supabase";
 import { errMsg } from "./errors";
+import { compareMatches } from "./matches";
 import type { Match, Player, Pool, Prediction } from "./types";
 
 export interface PoolData {
@@ -60,7 +61,7 @@ export function usePoolData(poolId: string | null): PoolData {
       setNotFound(false);
       setPool(poolRes.data as Pool);
       setPlayers((playersRes.data ?? []) as Player[]);
-      setMatches((matchesRes.data ?? []) as Match[]);
+      setMatches(((matchesRes.data ?? []) as Match[]).sort(compareMatches));
       setPredictions((predsRes.data ?? []) as Prediction[]);
     } catch (e) {
       console.error("[Porra] Error cargando los datos:", e);
@@ -87,10 +88,10 @@ export function usePoolData(poolId: string | null): PoolData {
     const applyMatch = (row: Match) =>
       setMatches((prev) => {
         const idx = prev.findIndex((m) => m.id === row.id);
-        if (idx === -1) return [...prev, row].sort((a, b) => a.sort_order - b.sort_order);
+        if (idx === -1) return [...prev, row].sort(compareMatches);
         const next = prev.slice();
         next[idx] = row;
-        return next;
+        return next.sort(compareMatches);
       });
 
     const applyPred = (row: Prediction) =>

@@ -3,11 +3,13 @@ import { supabase } from "../lib/supabase";
 import { ALL_TEAMS } from "../data/teams";
 import type { Match } from "../lib/types";
 import { errMsg } from "../lib/errors";
+import { toLocalInput, fromLocalInput } from "../lib/dates";
 import { Banner, Button, Pill } from "./ui";
 
 function AdminMatchRow({ match }: { match: Match }) {
   const [home, setHome] = useState<string>(match.result_home?.toString() ?? "");
   const [away, setAway] = useState<string>(match.result_away?.toString() ?? "");
+  const [kickoff, setKickoff] = useState<string>(toLocalInput(match.kickoff));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,6 +95,33 @@ function AdminMatchRow({ match }: { match: Match }) {
           </Button>
         )}
       </div>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <label className="text-xs text-chalk/60">Fecha y hora</label>
+        <input
+          type="datetime-local"
+          value={kickoff}
+          onChange={(e) => {
+            setKickoff(e.target.value);
+            void run({ kickoff: fromLocalInput(e.target.value) });
+          }}
+          aria-label={`Fecha y hora de ${match.home_name} contra ${match.away_name}`}
+          className="rounded-lg border border-pitch-600 bg-pitch-800 px-2 py-1.5 text-xs text-chalk [color-scheme:dark]"
+        />
+        {kickoff && (
+          <Button
+            variant="ghost"
+            disabled={busy}
+            onClick={() => {
+              setKickoff("");
+              void run({ kickoff: null });
+            }}
+            className="px-2 py-1 text-xs"
+          >
+            Quitar fecha
+          </Button>
+        )}
+      </div>
+
       {error && (
         <div className="mt-2">
           <Banner kind="error">{error}</Banner>
@@ -108,6 +137,7 @@ function AddKnockout({ poolId, nextSortOrder }: { poolId: string; nextSortOrder:
   const [round, setRound] = useState(ROUND_OPTIONS[1]);
   const [homeIdx, setHomeIdx] = useState(0);
   const [awayIdx, setAwayIdx] = useState(1);
+  const [kickoff, setKickoff] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
@@ -136,6 +166,7 @@ function AddKnockout({ poolId, nextSortOrder }: { poolId: string; nextSortOrder:
         locked: false,
         result_home: null,
         result_away: null,
+        kickoff: fromLocalInput(kickoff),
         sort_order: nextSortOrder,
       });
       if (err) throw err;
@@ -191,6 +222,16 @@ function AddKnockout({ poolId, nextSortOrder }: { poolId: string; nextSortOrder:
           </select>
         </label>
       </div>
+
+      <label className="block">
+        <span className="mb-1 block text-xs text-chalk/60">Fecha y hora (opcional)</span>
+        <input
+          type="datetime-local"
+          value={kickoff}
+          onChange={(e) => setKickoff(e.target.value)}
+          className="w-full rounded-lg border border-pitch-600 bg-pitch-800 px-2 py-2 text-sm [color-scheme:dark]"
+        />
+      </label>
 
       {error && <Banner kind="error">{error}</Banner>}
       {ok && <Banner kind="success">Partido añadido. Aparece en la pestaña Partidos.</Banner>}

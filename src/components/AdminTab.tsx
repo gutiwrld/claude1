@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { ALL_TEAMS } from "../data/teams";
+import { defaultScheduleUpdates } from "../lib/matches";
 import type { Match } from "../lib/types";
 import { errMsg } from "../lib/errors";
 import { toLocalInput, fromLocalInput } from "../lib/dates";
@@ -243,6 +244,50 @@ function AddKnockout({ poolId, nextSortOrder }: { poolId: string; nextSortOrder:
   );
 }
 
+function AutoSchedule({ matches }: { matches: Match[] }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<number | null>(null);
+
+  const pending = useMemo(() => defaultScheduleUpdates(matches), [matches]);
+
+  async function generate() {
+    setBusy(true);
+    setError(null);
+    setDone(null);
+    try {
+      // Aplica las fechas por defecto en paralelo (solo a los partidos sin fecha).
+      const results = await Promise.all(
+        pending.map((u) => supabase.from("matches").update({ kickoff: u.kickoff }).eq("id", u.id))
+      );
+      const firstErr = results.find((r) => r.error)?.error;
+      if (firstErr) throw firstErr;
+      setDone(pending.length);
+    } catch (e) {
+      console.error("[Porra] Error generando el calendario:", e);
+      setError(errMsg(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="space-y-3 rounded-2xl border border-pitch-700 bg-pitch-900/60 p-4">
+      <h3 className="text-sm font-bold uppercase tracking-wide text-chalk/60">Calendario automático</h3>
+      <p className="text-xs text-chalk/60">
+        Asigna fechas y horas por defecto (tipo Mundial: J1, J2 y J3 en días sucesivos) a los{" "}
+        <span className="font-semibold text-chalk">{pending.length}</span> partidos de grupos que aún no tienen fecha. No toca
+        los que ya tienen fecha ni las eliminatorias. Luego puedes ajustar cualquiera a mano.
+      </p>
+      {error && <Banner kind="error">{error}</Banner>}
+      {done !== null && <Banner kind="success">Calendario generado para {done} partido(s).</Banner>}
+      <Button onClick={generate} disabled={busy || pending.length === 0} className="w-full">
+        {busy ? "Generando…" : pending.length === 0 ? "Todo tiene fecha ✓" : `Generar fechas (${pending.length})`}
+      </Button>
+    </section>
+  );
+}
+
 export function AdminTab({ matches, poolId }: { matches: Match[]; poolId: string }) {
   const nextSortOrder = useMemo(
     () => matches.reduce((max, m) => Math.max(max, m.sort_order), 0) + 1,
@@ -255,6 +300,8 @@ export function AdminTab({ matches, poolId }: { matches: Match[]; poolId: string
         Modo administrador: carga marcadores, cierra/reabre partidos y añade eliminatorias. Los cambios se ven en tiempo real
         para todos.
       </Banner>
+
+      <AutoSchedule matches={matches} />
 
       <AddKnockout poolId={poolId} nextSortOrder={nextSortOrder} />
 

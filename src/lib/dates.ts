@@ -16,6 +16,11 @@ function todayKey(offsetDays = 0): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+/** Clave del día de hoy en hora local. */
+export function nowDayKey(): string {
+  return todayKey(0);
+}
+
 const dateFmt = new Intl.DateTimeFormat("es-ES", {
   weekday: "long",
   day: "numeric",
@@ -43,6 +48,13 @@ export function dayLabel(iso: string): string {
 /** Hora local 'HH:MM'. */
 export function timeLabel(iso: string): string {
   return timeFmt.format(new Date(iso));
+}
+
+const shortFmt = new Intl.DateTimeFormat("es-ES", { weekday: "short", day: "numeric" });
+
+/** Etiqueta corta para los chips del calendario: 'Jue 11'. */
+export function shortDayLabel(iso: string): string {
+  return capitalize(shortFmt.format(new Date(iso)).replace(".", ""));
 }
 
 /** ISO -> valor para <input type="datetime-local"> en hora local. */

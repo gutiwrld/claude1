@@ -11,6 +11,7 @@ export interface Player {
   id: string;
   pool_id: string;
   name: string;
+  bonus_pts: number;
   created_at: string;
 }
 

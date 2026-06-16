@@ -4,7 +4,7 @@ import { ALL_TEAMS, FLAG_BY_NAME } from "../data/teams";
 import { buildGroupMatches } from "../lib/matches";
 import { computeGroupTables } from "../lib/groupTables";
 import { buildBracketSeeds, resolveAdvancers } from "../lib/bracket";
-import type { Match } from "../lib/types";
+import type { Match, Player } from "../lib/types";
 import { errMsg } from "../lib/errors";
 import { toLocalInput, fromLocalInput } from "../lib/dates";
 import { Banner, Button, Pill } from "./ui";
@@ -479,7 +479,82 @@ function SyncResults() {
   );
 }
 
-export function AdminTab({ matches, poolId }: { matches: Match[]; poolId: string }) {
+function BonusPanel({ players, onChanged }: { players: Player[]; onChanged: () => void }) {
+  const sorted = useMemo(() => [...players].sort((a, b) => a.name.localeCompare(b.name, "es")), [players]);
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const valueFor = (p: Player) => values[p.id] ?? String(p.bonus_pts ?? 0);
+
+  async function save() {
+    setBusy(true); setError(null); setMsg(null);
+    try {
+      const changed = sorted.filter((p) => values[p.id] !== undefined && values[p.id] !== String(p.bonus_pts ?? 0));
+      const results = await Promise.all(
+        changed.map((p) =>
+          supabase.from("players").update({ bonus_pts: parseInt(values[p.id], 10) || 0 }).eq("id", p.id)
+        )
+      );
+      const firstErr = results.find((r) => r.error)?.error;
+      if (firstErr) throw firstErr;
+      setMsg(`Puntos guardados (${changed.length} jugador(es)).`);
+      setValues({});
+      onChanged();
+    } catch (e) {
+      console.error("[Porra] Error guardando puntos manuales:", e);
+      setError(errMsg(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="space-y-3 rounded-2xl border border-pitch-700 bg-pitch-900/60 p-4">
+      <h3 className="text-sm font-bold uppercase tracking-wide text-chalk/60">Puntos de arrastre</h3>
+      <p className="text-xs text-chalk/60">
+        Puntos que se <span className="font-semibold text-chalk">suman</span> a cada jugador además de lo que gane con sus
+        pronósticos. Útil para registrar jornadas ya jugadas antes de usar la app.
+      </p>
+      {players.length === 0 ? (
+        <Banner kind="info">No hay jugadores en esta porra.</Banner>
+      ) : (
+        <ul className="space-y-2">
+          {sorted.map((p) => (
+            <li key={p.id} className="flex items-center justify-between gap-2">
+              <span className="truncate text-sm">{p.name}</span>
+              <input
+                type="number"
+                value={valueFor(p)}
+                onChange={(e) => setValues((v) => ({ ...v, [p.id]: e.target.value }))}
+                aria-label={`Puntos de arrastre de ${p.name}`}
+                className="w-20 rounded-lg border border-pitch-600 bg-pitch-800 px-2 py-1.5 text-center tabular-nums"
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+      {error && <Banner kind="error">{error}</Banner>}
+      {msg && <Banner kind="success">{msg}</Banner>}
+      <Button onClick={save} disabled={busy || players.length === 0} className="w-full">
+        {busy ? "Guardando…" : "Guardar puntos"}
+      </Button>
+    </section>
+  );
+}
+
+export function AdminTab({
+  matches,
+  players,
+  poolId,
+  onChanged,
+}: {
+  matches: Match[];
+  players: Player[];
+  poolId: string;
+  onChanged: () => void;
+}) {
   const nextSortOrder = useMemo(
     () => matches.reduce((max, m) => Math.max(max, m.sort_order), 0) + 1,
     [matches]
@@ -493,6 +568,8 @@ export function AdminTab({ matches, poolId }: { matches: Match[]; poolId: string
       </Banner>
 
       <ReloadSchedule matches={matches} poolId={poolId} />
+
+      <BonusPanel players={players} onChanged={onChanged} />
 
       <BracketPanel matches={matches} poolId={poolId} />
 

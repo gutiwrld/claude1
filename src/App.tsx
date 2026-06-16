@@ -177,7 +177,7 @@ export default function App() {
 
         {tab === "admin" &&
           (isAdmin ? (
-            <AdminTab matches={matches} poolId={pool.id} />
+            <AdminTab matches={matches} players={players} poolId={pool.id} onChanged={() => void reload()} />
           ) : (
             <AdminGate pin={pool.admin_pin} onUnlock={() => setIsAdmin(true)} />
           ))}

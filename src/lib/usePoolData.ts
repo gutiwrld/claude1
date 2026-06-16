@@ -135,7 +135,13 @@ export function usePoolData(poolId: string | null): PoolData {
         (payload) => {
           if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
             const row = payload.new as Player;
-            setPlayers((prev) => (prev.some((p) => p.id === row.id) ? prev : [...prev, row]));
+            setPlayers((prev) => {
+              const idx = prev.findIndex((p) => p.id === row.id);
+              if (idx === -1) return [...prev, row];
+              const next = prev.slice();
+              next[idx] = row;
+              return next;
+            });
           }
         }
       )

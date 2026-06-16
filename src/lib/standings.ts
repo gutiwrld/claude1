@@ -26,7 +26,7 @@ export function computeStandings(
   );
 
   const rows: StandingRow[] = players.map((player) => {
-    let points = 0;
+    let points = player.bonus_pts ?? 0; // puntos de arrastre / manuales
     let exacts = 0;
     let played = 0;
 

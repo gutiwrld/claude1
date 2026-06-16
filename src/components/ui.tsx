@@ -60,12 +60,13 @@ export function Button({
   );
 }
 
-export function Pill({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "open" | "closed" | "final" }) {
+export function Pill({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "open" | "closed" | "final" | "live" }) {
   const tones: Record<string, string> = {
     neutral: "bg-pitch-700 text-chalk/70",
     open: "bg-grass-600/20 text-grass-300",
     closed: "bg-flare/15 text-flare",
     final: "bg-pitch-600 text-chalk/80",
+    live: "bg-red-600/20 text-red-300",
   };
   return (
     <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${tones[tone]}`}>{children}</span>

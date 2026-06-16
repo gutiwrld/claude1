@@ -52,6 +52,14 @@ export function MatchesTab({
   const [selected, setSelected] = useState<string>("all");
   const defaultApplied = useRef(false);
 
+  // Refresco periódico para que el cierre automático al empezar el partido
+  // se refleje sin tener que recargar la página.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 30000);
+    return () => clearInterval(id);
+  }, []);
+
   // Selección por defecto: hoy si hay partidos, si no el próximo día con partidos.
   useEffect(() => {
     if (defaultApplied.current || days.length === 0) return;

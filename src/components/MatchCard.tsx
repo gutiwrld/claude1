@@ -38,7 +38,9 @@ export function MatchCard({
   poolId: string;
 }) {
   const hasResult = match.result_home !== null && match.result_away !== null;
-  const editable = !match.locked && !hasResult;
+  // Cierre automático: una vez llega la hora del partido, ya no se puede editar.
+  const started = !!match.kickoff && Date.now() >= new Date(match.kickoff).getTime();
+  const editable = !match.locked && !hasResult && !started;
 
   const [home, setHome] = useState(myPrediction?.home ?? 0);
   const [away, setAway] = useState(myPrediction?.away ?? 0);
@@ -96,7 +98,15 @@ export function MatchCard({
           {match.grp ? `Grupo ${match.grp} · ${match.jornada}` : match.jornada}
           {match.kickoff && <span className="ml-2 text-flare">{timeLabel(match.kickoff)}</span>}
         </span>
-        {hasResult ? <Pill tone="final">Final</Pill> : match.locked ? <Pill tone="closed">Cerrado</Pill> : <Pill tone="open">Abierto</Pill>}
+        {hasResult ? (
+          <Pill tone="final">Final</Pill>
+        ) : match.locked ? (
+          <Pill tone="closed">Cerrado</Pill>
+        ) : started ? (
+          <Pill tone="live">En juego</Pill>
+        ) : (
+          <Pill tone="open">Abierto</Pill>
+        )}
       </div>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
@@ -141,7 +151,7 @@ export function MatchCard({
             {saveState === "idle" && "Toca +/− para tu pronóstico"}
           </span>
         ) : (
-          <span className="text-chalk/40">Pronóstico bloqueado</span>
+          <span className="text-chalk/40">{started ? "Cerrado: el partido ya empezó" : "Pronóstico bloqueado"}</span>
         )}
         {hasResult && myPts !== null && <PointsBadge pts={myPts} />}
       </div>

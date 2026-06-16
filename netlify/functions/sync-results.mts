@@ -99,13 +99,14 @@ interface DbMatch {
 }
 
 async function sync() {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+  // Reutiliza las variables del frontend (VITE_*) si no se definen las propias.
+  const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
   const TOKEN = process.env.FOOTBALL_DATA_TOKEN;
   const COMP = process.env.FOOTBALL_DATA_COMPETITION ?? "WC";
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !TOKEN) {
-    return { ok: false, reason: "Faltan variables de entorno (SUPABASE_URL, SUPABASE_ANON_KEY, FOOTBALL_DATA_TOKEN)." };
+    return { ok: false, reason: "Faltan variables de entorno. Necesitas al menos FOOTBALL_DATA_TOKEN (y SUPABASE_URL/ANON_KEY o sus equivalentes VITE_*)." };
   }
 
   // 1) Partidos terminados desde la API.

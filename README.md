@@ -71,10 +71,13 @@ Para activarla, en **Netlify → Site configuration → Environment variables** 
 
 | Variable | Valor |
 |----------|-------|
-| `SUPABASE_URL` | misma URL del proyecto Supabase |
-| `SUPABASE_ANON_KEY` | la anon key (las políticas RLS son abiertas) |
 | `FOOTBALL_DATA_TOKEN` | token gratuito de football-data.org (tras registrarte) |
+| `SUPABASE_URL` | *(opcional)* si no, reutiliza `VITE_SUPABASE_URL` |
+| `SUPABASE_ANON_KEY` | *(opcional)* si no, reutiliza `VITE_SUPABASE_ANON_KEY` |
 | `FOOTBALL_DATA_COMPETITION` | *(opcional)* código de competición, por defecto `WC` |
+
+> En la práctica, si ya tienes configuradas `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` para la web,
+> **solo necesitas añadir `FOOTBALL_DATA_TOKEN`**.
 
 Notas:
 - El cruce se hace por **pareja de equipos** (sin importar local/visitante). Los nombres de la API

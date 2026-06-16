@@ -47,7 +47,7 @@ const ALIASES: Record<string, string[]> = {
   "Egipto": ["Egypt"],
   "Irán": ["Iran", "IR Iran"],
   "Nueva Zelanda": ["New Zealand"],
-  "Cabo Verde": ["Cape Verde", "Cabo Verde"],
+  "Cabo Verde": ["Cape Verde", "Cabo Verde", "Cape Verde Islands"],
   "Arabia Saudí": ["Saudi Arabia"],
   "España": ["Spain"],
   "Uruguay": ["Uruguay"],

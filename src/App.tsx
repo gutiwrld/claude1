@@ -1,187 +1,397 @@
-import { useEffect, useState } from "react";
-import { supabaseConfigured } from "./lib/supabase";
-import { usePoolData } from "./lib/usePoolData";
-import { getIdentity, clearIdentity } from "./lib/storage";
-import type { Identity } from "./lib/storage";
-import type { ScoreRules } from "./lib/types";
-import { ConfigMissing } from "./components/ConfigMissing";
-import { CreatePool } from "./components/CreatePool";
-import { JoinPool } from "./components/JoinPool";
-import { MatchesTab } from "./components/MatchesTab";
-import { StandingsTab } from "./components/StandingsTab";
-import { AdminTab } from "./components/AdminTab";
-import { AdminGate } from "./components/AdminGate";
-import { Banner, Button, Spinner } from "./components/ui";
+import { useState } from 'react'
+import type { User } from '@supabase/supabase-js'
+import { useAuth } from './hooks/useAuth'
+import { useLayout } from './hooks/useLayout'
+import { useStore, CATEGORIES, Tab } from './hooks/useStore'
+import { Dashboard } from './components/organizer/Dashboard'
+import { CategoryView } from './components/organizer/CategoryView'
+import { ProjectsView } from './components/organizer/ProjectsView'
+import { ProfileView } from './components/organizer/ProfileView'
+import { NavBar } from './components/organizer/NavBar'
+import { Sidebar } from './components/organizer/Sidebar'
+import { LoginScreen } from './components/organizer/LoginScreen'
 
-type Tab = "partidos" | "clasificacion" | "admin";
+// ─── Loading spinner ──────────────────────────────────────────────────────────
 
-function getPoolIdFromUrl(): string | null {
-  return new URLSearchParams(window.location.search).get("pool");
-}
-
-function setPoolIdInUrl(poolId: string) {
-  const url = new URL(window.location.href);
-  url.searchParams.set("pool", poolId);
-  window.history.replaceState({}, "", url.toString());
-}
-
-export default function App() {
-  const [poolId, setPoolId] = useState<string | null>(getPoolIdFromUrl());
-  const [identity, setIdentity] = useState<Identity | null>(() => {
-    const pid = getPoolIdFromUrl();
-    return pid ? getIdentity(pid) : null;
-  });
-  const [tab, setTab] = useState<Tab>("partidos");
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const { pool, players, matches, predictions, loading, error, notFound, reload } = usePoolData(poolId);
-
-  // Si la pool carga y aún no hay identidad guardada, intenta recuperarla.
-  useEffect(() => {
-    if (poolId && !identity) {
-      const stored = getIdentity(poolId);
-      if (stored) setIdentity(stored);
-    }
-  }, [poolId, identity]);
-
-  if (!supabaseConfigured) return <ConfigMissing />;
-
-  // Crear pool (no hay ?pool en la URL).
-  if (!poolId) {
-    return (
-      <CreatePool
-        onCreated={(id, ident) => {
-          setPoolIdInUrl(id);
-          setPoolId(id);
-          setIdentity(ident);
+function LoadingSpinner() {
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        background: '#06060e',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        gap: 16,
+      }}
+    >
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: '50%',
+          border: '3px solid rgba(124,58,237,0.2)',
+          borderTopColor: '#7c3aed',
+          animation: 'spin 0.8s linear infinite',
         }}
       />
-    );
-  }
+      <p style={{ color: 'rgba(240,240,255,0.35)', fontSize: 13, margin: 0 }}>Cargando…</p>
+    </div>
+  )
+}
 
-  if (loading) return <Spinner label="Cargando la porra…" />;
+// ─── Main organizer (authenticated) ──────────────────────────────────────────
 
-  if (error) {
-    return (
-      <div className="mx-auto max-w-md px-4 py-12 space-y-4">
-        <Banner kind="error">No se pudieron cargar los datos: {error}</Banner>
-        <Button onClick={() => void reload()}>Reintentar</Button>
-      </div>
-    );
-  }
+function OrganizerApp({
+  userId,
+  user,
+  onSignOut,
+  onUpdateProfile,
+}: {
+  userId: string
+  user: User
+  onSignOut: () => void
+  onUpdateProfile: (updates: { name: string }) => Promise<{ error: string | null }>
+}) {
+  const [tab, setTab] = useState<Tab>('dashboard')
+  const { mode, setMode } = useLayout()
+  const {
+    store,
+    loading,
+    addTask,
+    toggleTask,
+    deleteTask,
+    addProject,
+    deleteProject,
+    daysLeft,
+    progress,
+    totalDone,
+    totalGoal,
+  } = useStore(userId)
 
-  if (notFound || !pool) {
-    return (
-      <div className="mx-auto max-w-md px-4 py-12 space-y-4">
-        <Banner kind="error">No existe ninguna porra con ese enlace.</Banner>
-        <Button
-          onClick={() => {
-            const url = new URL(window.location.href);
-            url.searchParams.delete("pool");
-            window.history.replaceState({}, "", url.toString());
-            setPoolId(null);
-            setIdentity(null);
+  if (loading) return <LoadingSpinner />
+
+  const isDesktop = mode === 'desktop'
+  const activeCategory = CATEGORIES.find(c => c.key === tab)
+
+  const tabLabel =
+    tab === 'projects'
+      ? 'Proyectos'
+      : tab === 'profile'
+        ? 'Mi Perfil'
+        : activeCategory?.labelLong ?? activeCategory?.label ?? ''
+
+  const tabColorLight =
+    tab === 'projects'
+      ? '#34d399'
+      : tab === 'profile'
+        ? '#f472b6'
+        : activeCategory?.colorLight ?? '#f0f0ff'
+
+  // Avatar initials for mobile header button
+  const displayName = (user.user_metadata?.full_name as string) || ''
+  const initials = displayName
+    ? displayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+    : (user.email?.[0]?.toUpperCase() ?? '?')
+
+  // ── Shared header pieces ────────────────────────────────────────────────────
+
+  const headerLeft =
+    tab === 'dashboard' ? (
+      <div>
+        <h1
+          style={{
+            margin: 0,
+            fontSize: 20,
+            fontWeight: 900,
+            letterSpacing: '-0.03em',
+            background: 'linear-gradient(135deg, #f0f0ff 0%, #a78bfa 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
           }}
         >
-          Crear una porra nueva
-        </Button>
+          Mi Carrera ✦
+        </h1>
+        <p
+          style={{
+            margin: 0,
+            fontSize: 11,
+            color: 'rgba(240,240,255,0.38)',
+            fontWeight: 500,
+            textTransform: 'capitalize',
+          }}
+        >
+          {new Date().toLocaleDateString('es-ES', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+          })}
+        </p>
       </div>
-    );
+    ) : (
+      <button
+        onClick={() => setTab('dashboard')}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          background: 'transparent',
+          border: 'none',
+          cursor: 'pointer',
+          padding: 0,
+          outline: 'none',
+          WebkitTapHighlightColor: 'transparent',
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M15 18l-6-6 6-6"
+            stroke="rgba(240,240,255,0.55)"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span
+          style={{
+            fontSize: 20,
+            fontWeight: 900,
+            color: tabColorLight,
+            letterSpacing: '-0.02em',
+          }}
+        >
+          {tabLabel}
+        </span>
+      </button>
+    )
+
+  const progressBadge = (
+    <div
+      style={{
+        fontSize: 12,
+        fontWeight: 700,
+        padding: '5px 12px',
+        borderRadius: 99,
+        background: 'rgba(124,58,237,0.14)',
+        color: '#a78bfa',
+        border: '1px solid rgba(124,58,237,0.22)',
+        fontVariantNumeric: 'tabular-nums',
+      }}
+    >
+      {totalDone}/{totalGoal}
+    </div>
+  )
+
+  // On mobile: avatar button → goes to profile
+  const avatarBtn = (
+    <button
+      onClick={() => setTab('profile')}
+      title="Mi perfil"
+      style={{
+        width: 34,
+        height: 34,
+        borderRadius: '50%',
+        border: tab === 'profile' ? '2px solid #f472b6' : '1.5px solid rgba(255,255,255,0.12)',
+        background:
+          tab === 'profile'
+            ? 'linear-gradient(135deg, #7c3aed, #0284c7)'
+            : 'rgba(124,58,237,0.2)',
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: 800,
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        outline: 'none',
+        WebkitTapHighlightColor: 'transparent',
+        transition: 'all 0.2s',
+        letterSpacing: '-0.01em',
+      }}
+      onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.9)')}
+      onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+      onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+    >
+      {initials}
+    </button>
+  )
+
+  // ── Page content ─────────────────────────────────────────────────────────────
+
+  const pageContent = (
+    <main>
+      {tab === 'dashboard' && (
+        <Dashboard
+          progress={progress}
+          daysLeft={daysLeft}
+          totalDone={totalDone}
+          totalGoal={totalGoal}
+          projects={store.projects}
+          onTabChange={setTab}
+        />
+      )}
+
+      {CATEGORIES.map(
+        cat =>
+          tab === cat.key && (
+            <CategoryView
+              key={cat.key}
+              config={cat}
+              tasks={store[cat.key]}
+              projects={store.projects}
+              progress={progress[cat.key]}
+              isDesktop={isDesktop}
+              onAdd={task => addTask(cat.key, task)}
+              onToggle={id => toggleTask(cat.key, id)}
+              onDelete={id => deleteTask(cat.key, id)}
+            />
+          )
+      )}
+
+      {tab === 'projects' && (
+        <ProjectsView
+          projects={store.projects}
+          tasks={{ obvs: store.obvs, lps: store.lps, bookpoints: store.bookpoints }}
+          isDesktop={isDesktop}
+          onAddProject={addProject}
+          onDeleteProject={deleteProject}
+        />
+      )}
+
+      {tab === 'profile' && (
+        <ProfileView
+          user={user}
+          progress={progress}
+          totalDone={totalDone}
+          totalGoal={totalGoal}
+          layoutMode={mode}
+          onSetLayout={setMode}
+          onSignOut={onSignOut}
+          onUpdateName={name => onUpdateProfile({ name })}
+        />
+      )}
+    </main>
+  )
+
+  // ── Desktop layout ────────────────────────────────────────────────────────────
+
+  if (isDesktop) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          minHeight: '100vh',
+          background: '#06060e',
+          color: '#f0f0ff',
+        }}
+      >
+        <Sidebar
+          active={tab}
+          onChange={setTab}
+          user={user}
+          totalDone={totalDone}
+          totalGoal={totalGoal}
+        />
+
+        <div style={{ flex: 1, paddingLeft: 240, minHeight: '100vh' }}>
+          <header
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 40,
+              background: 'rgba(6,6,14,0.92)',
+              backdropFilter: 'blur(28px)',
+              WebkitBackdropFilter: 'blur(28px)',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                height: 56,
+                padding: '0 32px',
+              }}
+            >
+              {headerLeft}
+              {progressBadge}
+            </div>
+          </header>
+
+          <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 32px' }}>
+            {pageContent}
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  // Hay pool pero no soy jugador: unirse.
-  if (!identity) {
-    return <JoinPool pool={pool} players={players} onJoined={setIdentity} />;
-  }
-
-  const rules: ScoreRules = { exact: pool.exact_pts, outcome: pool.outcome_pts };
-
-  async function copyInvite() {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      setCopied(false);
-    }
-  }
-
-  const tabs: { id: Tab; label: string }[] = [
-    { id: "partidos", label: "Partidos" },
-    { id: "clasificacion", label: "Clasificación" },
-    { id: "admin", label: "Admin" },
-  ];
+  // ── Mobile layout ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col">
-      <header className="sticky top-0 z-20 border-b border-pitch-700 bg-pitch-950/95 px-4 py-3 backdrop-blur">
-        <div className="flex items-center justify-between gap-2">
-          <div className="min-w-0">
-            <h1 className="truncate text-lg font-black">{pool.name}</h1>
-            <p className="text-xs text-chalk/50">
-              Hola, <span className="font-semibold text-chalk/80">{identity.playerName}</span> ·{" "}
-              <button
-                className="underline decoration-dotted hover:text-chalk/80"
-                onClick={() => {
-                  clearIdentity(pool.id);
-                  setIdentity(null);
-                }}
-              >
-                cambiar
-              </button>
-            </p>
+    <div
+      style={{
+        minHeight: '100%',
+        maxWidth: 512,
+        margin: '0 auto',
+        background: '#06060e',
+        color: '#f0f0ff',
+        position: 'relative',
+      }}
+    >
+      <header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 40,
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          background: 'rgba(6,6,14,0.92)',
+          backdropFilter: 'blur(28px)',
+          WebkitBackdropFilter: 'blur(28px)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: 56,
+            padding: '0 20px',
+          }}
+        >
+          {headerLeft}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {progressBadge}
+            {avatarBtn}
           </div>
-          <Button variant="ghost" onClick={() => void copyInvite()} className="shrink-0 px-3 py-2 text-xs">
-            {copied ? "¡Copiado!" : "Invitar 🔗"}
-          </Button>
         </div>
-
-        <nav className="mt-3 flex gap-1 rounded-xl bg-pitch-800 p-1" aria-label="Secciones">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              aria-current={tab === t.id ? "page" : undefined}
-              className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                tab === t.id ? "bg-grass-500 text-pitch-950" : "text-chalk/70 hover:text-chalk"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </nav>
       </header>
 
-      <main className="flex-1 px-4 py-4">
-        {tab === "partidos" && (
-          <MatchesTab
-            matches={matches}
-            predictions={predictions}
-            players={players}
-            rules={rules}
-            playerId={identity.playerId}
-            poolId={pool.id}
-          />
-        )}
+      {pageContent}
 
-        {tab === "clasificacion" && (
-          <StandingsTab
-            players={players}
-            matches={matches}
-            predictions={predictions}
-            rules={rules}
-            playerId={identity.playerId}
-          />
-        )}
-
-        {tab === "admin" &&
-          (isAdmin ? (
-            <AdminTab matches={matches} players={players} poolId={pool.id} onChanged={() => void reload()} />
-          ) : (
-            <AdminGate pin={pool.admin_pin} onUnlock={() => setIsAdmin(true)} />
-          ))}
-      </main>
+      <NavBar active={tab} onChange={setTab} />
     </div>
-  );
+  )
+}
+
+// ─── Root ─────────────────────────────────────────────────────────────────────
+
+export default function App() {
+  const { user, loading, signIn, signUp, signOut, updateProfile } = useAuth()
+
+  if (loading) return <LoadingSpinner />
+  if (!user) return <LoginScreen onSignIn={signIn} onSignUp={signUp} />
+
+  return (
+    <OrganizerApp
+      userId={user.id}
+      user={user}
+      onSignOut={signOut}
+      onUpdateProfile={updateProfile}
+    />
+  )
 }

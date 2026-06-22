@@ -32,7 +32,6 @@ export function useAuth(): AuthState {
   const signInWithEmail = async (email: string): Promise<{ error: string | null }> => {
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
-      options: { emailRedirectTo: window.location.origin },
     })
     return { error: error?.message ?? null }
   }

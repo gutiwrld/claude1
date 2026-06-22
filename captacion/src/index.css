@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-paper text-ink font-sans antialiased;
+}
+
+/* Tipografía display para titulares */
+.font-display {
+  font-feature-settings: "ss01";
+}
+
+/* Foco accesible y consistente */
+*:focus-visible {
+  outline: 2px solid theme("colors.terracotta.500");
+  outline-offset: 2px;
+}
+
+/* Scroll horizontal del tablero sin barra fea */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

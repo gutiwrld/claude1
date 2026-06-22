@@ -1,0 +1,15 @@
+# Netlify para el proyecto de captación (subcarpeta /captacion del repo).
+# En Netlify: Site settings → Build & deploy → "Base directory" = captacion
+[build]
+  base = "captacion"
+  command = "npm run build"
+  publish = "captacion/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# SPA fallback: toda ruta sirve index.html (incl. /panel)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

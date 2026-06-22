@@ -1,14 +1,49 @@
 import { useState } from 'react'
+import { useAuth } from './hooks/useAuth'
 import { useStore, CATEGORIES, Tab } from './hooks/useStore'
 import { Dashboard } from './components/organizer/Dashboard'
 import { CategoryView } from './components/organizer/CategoryView'
 import { ProjectsView } from './components/organizer/ProjectsView'
 import { NavBar } from './components/organizer/NavBar'
+import { LoginScreen } from './components/organizer/LoginScreen'
 
-export default function App() {
+// ─── Loading spinner ──────────────────────────────────────────────────────────
+
+function LoadingSpinner() {
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        background: '#06060e',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        gap: 16,
+      }}
+    >
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: '50%',
+          border: '3px solid rgba(124,58,237,0.2)',
+          borderTopColor: '#7c3aed',
+          animation: 'spin 0.8s linear infinite',
+        }}
+      />
+      <p style={{ color: 'rgba(240,240,255,0.35)', fontSize: 13, margin: 0 }}>Cargando…</p>
+    </div>
+  )
+}
+
+// ─── Main organizer (authenticated) ──────────────────────────────────────────
+
+function OrganizerApp({ userId, onSignOut }: { userId: string; onSignOut: () => void }) {
   const [tab, setTab] = useState<Tab>('dashboard')
   const {
     store,
+    loading,
     addTask,
     toggleTask,
     deleteTask,
@@ -18,7 +53,9 @@ export default function App() {
     progress,
     totalDone,
     totalGoal,
-  } = useStore()
+  } = useStore(userId)
+
+  if (loading) return <LoadingSpinner />
 
   const activeCategory = CATEGORIES.find(c => c.key === tab)
 
@@ -70,7 +107,6 @@ export default function App() {
                   margin: 0,
                   fontSize: 20,
                   fontWeight: 900,
-                  color: '#f0f0ff',
                   letterSpacing: '-0.03em',
                   background: 'linear-gradient(135deg, #f0f0ff 0%, #a78bfa 100%)',
                   WebkitBackgroundClip: 'text',
@@ -120,39 +156,59 @@ export default function App() {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span
-                style={{
-                  fontSize: 20,
-                  fontWeight: 900,
-                  color: tabColorLight,
-                  letterSpacing: '-0.02em',
-                }}
-              >
+              <span style={{ fontSize: 20, fontWeight: 900, color: tabColorLight, letterSpacing: '-0.02em' }}>
                 {tabLabel}
               </span>
             </button>
           )}
 
-          {/* Progress badge */}
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              padding: '5px 12px',
-              borderRadius: 99,
-              background: 'rgba(124,58,237,0.14)',
-              color: '#a78bfa',
-              border: '1px solid rgba(124,58,237,0.22)',
-              fontVariantNumeric: 'tabular-nums',
-            }}
-          >
-            {totalDone}/{totalGoal}
+          {/* Right side: progress badge + sign out */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                padding: '5px 12px',
+                borderRadius: 99,
+                background: 'rgba(124,58,237,0.14)',
+                color: '#a78bfa',
+                border: '1px solid rgba(124,58,237,0.22)',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              {totalDone}/{totalGoal}
+            </div>
+            <button
+              onClick={onSignOut}
+              title="Cerrar sesión"
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 10,
+                width: 32,
+                height: 32,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                outline: 'none',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+              onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.9)')}
+              onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+              onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-label="Cerrar sesión">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="rgba(240,240,255,0.4)" strokeWidth="2" strokeLinecap="round" />
+                <path d="M16 17l5-5-5-5M21 12H9" stroke="rgba(240,240,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           </div>
         </div>
       </header>
 
       {/* Page content */}
-      <main style={{ paddingBottom: 0 }}>
+      <main>
         {tab === 'dashboard' && (
           <Dashboard
             progress={progress}
@@ -193,4 +249,15 @@ export default function App() {
       <NavBar active={tab} onChange={setTab} />
     </div>
   )
+}
+
+// ─── Root ─────────────────────────────────────────────────────────────────────
+
+export default function App() {
+  const { user, loading, signInWithEmail, signOut } = useAuth()
+
+  if (loading) return <LoadingSpinner />
+  if (!user) return <LoginScreen onLogin={signInWithEmail} />
+
+  return <OrganizerApp userId={user.id} onSignOut={signOut} />
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
 export type Category = 'obvs' | 'lps' | 'bookpoints'
 export type Tab = 'dashboard' | Category | 'projects'
@@ -30,12 +31,12 @@ export interface Task {
   done: boolean
   createdAt: number
   doneAt?: number
+  projectId?: string
   // OBV-specific fields
   tipo?: ObvTipo
   persona?: string
   fecha?: string
   notas?: string
-  projectId?: string
 }
 
 export interface Project {
@@ -100,87 +101,196 @@ export interface Store {
 
 export const DEADLINE = new Date('2026-09-01T00:00:00')
 
-const defaultStore: Store = { obvs: [], lps: [], bookpoints: [], projects: [] }
+const emptyStore: Store = { obvs: [], lps: [], bookpoints: [], projects: [] }
 
-function loadStore(): Store {
-  try {
-    const raw = localStorage.getItem('organizer-v2')
-    if (!raw) return defaultStore
-    const parsed = JSON.parse(raw) as Partial<Store>
-    return {
-      obvs: parsed.obvs ?? [],
-      lps: parsed.lps ?? [],
-      bookpoints: parsed.bookpoints ?? [],
-      projects: parsed.projects ?? [],
-    }
-  } catch {
-    return defaultStore
+// --- DB row types ---
+interface DbTask {
+  id: string
+  category: string
+  text: string
+  done: boolean
+  created_at: string
+  done_at: string | null
+  project_id: string | null
+  tipo: string | null
+  persona: string | null
+  fecha: string | null
+  notas: string | null
+}
+
+interface DbProject {
+  id: string
+  name: string
+  color: string
+  emoji: string
+  description: string
+  created_at: string
+}
+
+// --- Conversion helpers ---
+function dbToTask(row: DbTask): Task {
+  return {
+    id: row.id,
+    text: row.text,
+    done: row.done,
+    createdAt: new Date(row.created_at).getTime(),
+    doneAt: row.done_at ? new Date(row.done_at).getTime() : undefined,
+    projectId: row.project_id ?? undefined,
+    tipo: (row.tipo as ObvTipo) ?? undefined,
+    persona: row.persona ?? undefined,
+    fecha: row.fecha ?? undefined,
+    notas: row.notas ?? undefined,
   }
 }
 
-export function useStore() {
-  const [store, setStore] = useState<Store>(loadStore)
+function dbToProject(row: DbProject): Project {
+  return {
+    id: row.id,
+    name: row.name,
+    color: row.color,
+    emoji: row.emoji,
+    description: row.description,
+    createdAt: new Date(row.created_at).getTime(),
+  }
+}
 
+// --- Hook ---
+export function useStore(userId: string) {
+  const [store, setStore] = useState<Store>(emptyStore)
+  const [loading, setLoading] = useState(true)
+
+  // Load all data for this user on mount
   useEffect(() => {
-    localStorage.setItem('organizer-v2', JSON.stringify(store))
-  }, [store])
+    setLoading(true)
+    Promise.all([
+      supabase
+        .from('organizer_tasks')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at'),
+      supabase
+        .from('organizer_projects')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at'),
+    ]).then(([{ data: tasks }, { data: projects }]) => {
+      const rows = (tasks ?? []) as DbTask[]
+      setStore({
+        obvs: rows.filter(r => r.category === 'obvs').map(dbToTask),
+        lps: rows.filter(r => r.category === 'lps').map(dbToTask),
+        bookpoints: rows.filter(r => r.category === 'bookpoints').map(dbToTask),
+        projects: ((projects ?? []) as DbProject[]).map(dbToProject),
+      })
+      setLoading(false)
+    })
+  }, [userId])
 
-  const addTask = (cat: Category, task: Omit<Task, 'id' | 'createdAt'>) => {
+  // --- Task mutations ---
+
+  const addTask = async (cat: Category, task: Omit<Task, 'id' | 'createdAt'>) => {
     const trimmed = task.text.trim()
     if (!trimmed) return
+
+    // Optimistic update with temp ID
+    const tempId = `temp-${Date.now()}`
+    const optimistic: Task = { ...task, text: trimmed, id: tempId, createdAt: Date.now() }
+    setStore(s => ({ ...s, [cat]: [...s[cat], optimistic] }))
+
+    const { data, error } = await supabase
+      .from('organizer_tasks')
+      .insert({
+        user_id: userId,
+        category: cat,
+        text: trimmed,
+        done: task.done,
+        project_id: task.projectId ?? null,
+        tipo: task.tipo ?? null,
+        persona: task.persona ?? null,
+        fecha: task.fecha ?? null,
+        notas: task.notas ?? null,
+      })
+      .select()
+      .single()
+
+    if (error || !data) {
+      // Rollback on error
+      setStore(s => ({ ...s, [cat]: s[cat].filter(t => t.id !== tempId) }))
+      return
+    }
+
+    // Replace temp ID with real DB id
     setStore(s => ({
       ...s,
-      [cat]: [
-        ...s[cat],
-        {
-          ...task,
-          text: trimmed,
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-          createdAt: Date.now(),
-        },
-      ],
+      [cat]: s[cat].map(t => (t.id === tempId ? dbToTask(data as DbTask) : t)),
     }))
   }
 
-  const toggleTask = (cat: Category, id: string) => {
+  const toggleTask = async (cat: Category, id: string) => {
+    const task = store[cat].find(t => t.id === id)
+    if (!task) return
+
+    const newDone = !task.done
+    const doneAt = newDone ? Date.now() : undefined
+
+    // Optimistic update
     setStore(s => ({
       ...s,
-      [cat]: s[cat].map(t =>
-        t.id === id
-          ? { ...t, done: !t.done, doneAt: !t.done ? Date.now() : undefined }
-          : t
-      ),
+      [cat]: s[cat].map(t => (t.id === id ? { ...t, done: newDone, doneAt } : t)),
     }))
+
+    await supabase
+      .from('organizer_tasks')
+      .update({
+        done: newDone,
+        done_at: doneAt ? new Date(doneAt).toISOString() : null,
+      })
+      .eq('id', id)
   }
 
-  const deleteTask = (cat: Category, id: string) => {
+  const deleteTask = async (cat: Category, id: string) => {
+    // Optimistic remove
     setStore(s => ({ ...s, [cat]: s[cat].filter(t => t.id !== id) }))
+    await supabase.from('organizer_tasks').delete().eq('id', id)
   }
 
-  const addProject = (project: Omit<Project, 'id' | 'createdAt'>) => {
+  // --- Project mutations ---
+
+  const addProject = async (project: Omit<Project, 'id' | 'createdAt'>) => {
+    const tempId = `proj-temp-${Date.now()}`
+    const optimistic: Project = { ...project, id: tempId, createdAt: Date.now() }
+    setStore(s => ({ ...s, projects: [...s.projects, optimistic] }))
+
+    const { data, error } = await supabase
+      .from('organizer_projects')
+      .insert({ user_id: userId, ...project })
+      .select()
+      .single()
+
+    if (error || !data) {
+      setStore(s => ({ ...s, projects: s.projects.filter(p => p.id !== tempId) }))
+      return
+    }
+
     setStore(s => ({
       ...s,
-      projects: [
-        ...s.projects,
-        {
-          ...project,
-          id: `proj-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-          createdAt: Date.now(),
-        },
-      ],
+      projects: s.projects.map(p => (p.id === tempId ? dbToProject(data as DbProject) : p)),
     }))
   }
 
-  const deleteProject = (id: string) => {
+  const deleteProject = async (id: string) => {
     setStore(s => ({ ...s, projects: s.projects.filter(p => p.id !== id) }))
+    await supabase.from('organizer_projects').delete().eq('id', id)
   }
 
-  const updateProject = (id: string, updates: Partial<Omit<Project, 'id' | 'createdAt'>>) => {
+  const updateProject = async (id: string, updates: Partial<Omit<Project, 'id' | 'createdAt'>>) => {
     setStore(s => ({
       ...s,
       projects: s.projects.map(p => (p.id === id ? { ...p, ...updates } : p)),
     }))
+    await supabase.from('organizer_projects').update(updates).eq('id', id)
   }
+
+  // --- Computed values ---
 
   const daysLeft = Math.max(
     0,
@@ -202,6 +312,7 @@ export function useStore() {
 
   return {
     store,
+    loading,
     addTask,
     toggleTask,
     deleteTask,

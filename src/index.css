@@ -65,6 +65,11 @@
   }
 }
 
+/* Spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Task entry animation */
 @keyframes slideIn {
   from {

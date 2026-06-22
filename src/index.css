@@ -16,7 +16,7 @@
   }
 
   body {
-    background-color: #08080f;
+    background-color: #06060e;
     color: #f0f0ff;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, ui-sans-serif, system-ui,
       sans-serif;
@@ -33,8 +33,25 @@
   }
 
   :focus-visible {
-    outline: 2px solid #8b5cf6;
+    outline: 2px solid #7c3aed;
     outline-offset: 2px;
+  }
+
+  /* Subtle mesh gradient on body */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 0%, rgba(124,58,237,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(2,132,199,0.08) 0%, transparent 60%);
+  }
+
+  #root {
+    position: relative;
+    z-index: 1;
   }
 
   button {

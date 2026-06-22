@@ -1,7 +1,28 @@
 import { useState, useEffect } from 'react'
 
 export type Category = 'obvs' | 'lps' | 'bookpoints'
-export type Tab = 'dashboard' | Category
+export type Tab = 'dashboard' | Category | 'projects'
+
+export const OBV_TIPOS = [
+  'No participante',
+  'Participante',
+  'Sistemática',
+  'Ocasional',
+  'Directa',
+  'Indirecta',
+] as const
+export type ObvTipo = (typeof OBV_TIPOS)[number]
+
+export const PROJECT_COLORS = [
+  '#7c3aed',
+  '#0ea5e9',
+  '#059669',
+  '#e11d48',
+  '#d97706',
+  '#4338ca',
+  '#0d9488',
+  '#9333ea',
+] as const
 
 export interface Task {
   id: string
@@ -9,6 +30,21 @@ export interface Task {
   done: boolean
   createdAt: number
   doneAt?: number
+  // OBV-specific fields
+  tipo?: ObvTipo
+  persona?: string
+  fecha?: string
+  notas?: string
+  projectId?: string
+}
+
+export interface Project {
+  id: string
+  name: string
+  color: string
+  emoji: string
+  description: string
+  createdAt: number
 }
 
 export interface CategoryConfig {
@@ -28,9 +64,9 @@ export const CATEGORIES: CategoryConfig[] = [
     label: 'OBVs',
     labelLong: 'Observaciones',
     goal: 50,
-    color: '#8b5cf6',
-    colorLight: '#c4b5fd',
-    colorGlow: 'rgba(139, 92, 246, 0.35)',
+    color: '#7c3aed',
+    colorLight: '#a78bfa',
+    colorGlow: 'rgba(124,58,237,0.35)',
     emoji: '👁',
   },
   {
@@ -38,9 +74,9 @@ export const CATEGORIES: CategoryConfig[] = [
     label: 'LPs',
     labelLong: 'Learning Points',
     goal: 4,
-    color: '#06b6d4',
-    colorLight: '#67e8f9',
-    colorGlow: 'rgba(6, 182, 212, 0.35)',
+    color: '#0284c7',
+    colorLight: '#38bdf8',
+    colorGlow: 'rgba(2,132,199,0.35)',
     emoji: '📋',
   },
   {
@@ -48,9 +84,9 @@ export const CATEGORIES: CategoryConfig[] = [
     label: 'Bookpoints',
     labelLong: 'Bookpoints',
     goal: 10,
-    color: '#f97316',
-    colorLight: '#fdba74',
-    colorGlow: 'rgba(249, 115, 22, 0.35)',
+    color: '#c2410c',
+    colorLight: '#fb923c',
+    colorGlow: 'rgba(194,65,12,0.35)',
     emoji: '📚',
   },
 ]
@@ -59,21 +95,23 @@ export interface Store {
   obvs: Task[]
   lps: Task[]
   bookpoints: Task[]
+  projects: Project[]
 }
 
 export const DEADLINE = new Date('2026-09-01T00:00:00')
 
-const defaultStore: Store = { obvs: [], lps: [], bookpoints: [] }
+const defaultStore: Store = { obvs: [], lps: [], bookpoints: [], projects: [] }
 
 function loadStore(): Store {
   try {
-    const raw = localStorage.getItem('organizer-v1')
+    const raw = localStorage.getItem('organizer-v2')
     if (!raw) return defaultStore
     const parsed = JSON.parse(raw) as Partial<Store>
     return {
       obvs: parsed.obvs ?? [],
       lps: parsed.lps ?? [],
       bookpoints: parsed.bookpoints ?? [],
+      projects: parsed.projects ?? [],
     }
   } catch {
     return defaultStore
@@ -84,20 +122,20 @@ export function useStore() {
   const [store, setStore] = useState<Store>(loadStore)
 
   useEffect(() => {
-    localStorage.setItem('organizer-v1', JSON.stringify(store))
+    localStorage.setItem('organizer-v2', JSON.stringify(store))
   }, [store])
 
-  const addTask = (cat: Category, text: string) => {
-    const trimmed = text.trim()
+  const addTask = (cat: Category, task: Omit<Task, 'id' | 'createdAt'>) => {
+    const trimmed = task.text.trim()
     if (!trimmed) return
     setStore(s => ({
       ...s,
       [cat]: [
         ...s[cat],
         {
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          ...task,
           text: trimmed,
-          done: false,
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           createdAt: Date.now(),
         },
       ],
@@ -119,6 +157,31 @@ export function useStore() {
     setStore(s => ({ ...s, [cat]: s[cat].filter(t => t.id !== id) }))
   }
 
+  const addProject = (project: Omit<Project, 'id' | 'createdAt'>) => {
+    setStore(s => ({
+      ...s,
+      projects: [
+        ...s.projects,
+        {
+          ...project,
+          id: `proj-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          createdAt: Date.now(),
+        },
+      ],
+    }))
+  }
+
+  const deleteProject = (id: string) => {
+    setStore(s => ({ ...s, projects: s.projects.filter(p => p.id !== id) }))
+  }
+
+  const updateProject = (id: string, updates: Partial<Omit<Project, 'id' | 'createdAt'>>) => {
+    setStore(s => ({
+      ...s,
+      projects: s.projects.map(p => (p.id === id ? { ...p, ...updates } : p)),
+    }))
+  }
+
   const daysLeft = Math.max(
     0,
     Math.ceil((DEADLINE.getTime() - Date.now()) / 86_400_000)
@@ -137,5 +200,17 @@ export function useStore() {
   )
   const totalGoal = CATEGORIES.reduce((sum, { goal }) => sum + goal, 0)
 
-  return { store, addTask, toggleTask, deleteTask, daysLeft, progress, totalDone, totalGoal }
+  return {
+    store,
+    addTask,
+    toggleTask,
+    deleteTask,
+    addProject,
+    deleteProject,
+    updateProject,
+    daysLeft,
+    progress,
+    totalDone,
+    totalGoal,
+  }
 }

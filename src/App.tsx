@@ -2,14 +2,33 @@ import { useState } from 'react'
 import { useStore, CATEGORIES, Tab } from './hooks/useStore'
 import { Dashboard } from './components/organizer/Dashboard'
 import { CategoryView } from './components/organizer/CategoryView'
+import { ProjectsView } from './components/organizer/ProjectsView'
 import { NavBar } from './components/organizer/NavBar'
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('dashboard')
-  const { store, addTask, toggleTask, deleteTask, daysLeft, progress, totalDone, totalGoal } =
-    useStore()
+  const {
+    store,
+    addTask,
+    toggleTask,
+    deleteTask,
+    addProject,
+    deleteProject,
+    daysLeft,
+    progress,
+    totalDone,
+    totalGoal,
+  } = useStore()
 
   const activeCategory = CATEGORIES.find(c => c.key === tab)
+
+  const tabLabel =
+    tab === 'projects'
+      ? 'Proyectos'
+      : activeCategory?.labelLong ?? activeCategory?.label ?? ''
+
+  const tabColorLight =
+    tab === 'projects' ? '#34d399' : activeCategory?.colorLight ?? '#f0f0ff'
 
   return (
     <div
@@ -17,7 +36,7 @@ export default function App() {
         minHeight: '100%',
         maxWidth: 512,
         margin: '0 auto',
-        background: '#08080f',
+        background: '#06060e',
         color: '#f0f0ff',
         position: 'relative',
       }}
@@ -29,9 +48,9 @@ export default function App() {
           top: 0,
           zIndex: 40,
           paddingTop: 'env(safe-area-inset-top, 0px)',
-          background: 'rgba(8,8,15,0.92)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
+          background: 'rgba(6,6,14,0.92)',
+          backdropFilter: 'blur(28px)',
+          WebkitBackdropFilter: 'blur(28px)',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}
       >
@@ -52,7 +71,11 @@ export default function App() {
                   fontSize: 20,
                   fontWeight: 900,
                   color: '#f0f0ff',
-                  letterSpacing: '-0.02em',
+                  letterSpacing: '-0.03em',
+                  background: 'linear-gradient(135deg, #f0f0ff 0%, #a78bfa 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
                 }}
               >
                 Mi Carrera ✦
@@ -61,7 +84,7 @@ export default function App() {
                 style={{
                   margin: 0,
                   fontSize: 11,
-                  color: 'rgba(240,240,255,0.4)',
+                  color: 'rgba(240,240,255,0.38)',
                   fontWeight: 500,
                   textTransform: 'capitalize',
                 }}
@@ -91,7 +114,7 @@ export default function App() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path
                   d="M15 18l-6-6 6-6"
-                  stroke="rgba(240,240,255,0.6)"
+                  stroke="rgba(240,240,255,0.55)"
                   strokeWidth="2.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -101,11 +124,11 @@ export default function App() {
                 style={{
                   fontSize: 20,
                   fontWeight: 900,
-                  color: activeCategory?.colorLight ?? '#f0f0ff',
+                  color: tabColorLight,
                   letterSpacing: '-0.02em',
                 }}
               >
-                {activeCategory?.label}
+                {tabLabel}
               </span>
             </button>
           )}
@@ -117,9 +140,9 @@ export default function App() {
               fontWeight: 700,
               padding: '5px 12px',
               borderRadius: 99,
-              background: 'rgba(139,92,246,0.14)',
-              color: '#c4b5fd',
-              border: '1px solid rgba(139,92,246,0.22)',
+              background: 'rgba(124,58,237,0.14)',
+              color: '#a78bfa',
+              border: '1px solid rgba(124,58,237,0.22)',
               fontVariantNumeric: 'tabular-nums',
             }}
           >
@@ -129,16 +152,18 @@ export default function App() {
       </header>
 
       {/* Page content */}
-      <main>
+      <main style={{ paddingBottom: 0 }}>
         {tab === 'dashboard' && (
           <Dashboard
             progress={progress}
             daysLeft={daysLeft}
             totalDone={totalDone}
             totalGoal={totalGoal}
+            projects={store.projects}
             onTabChange={setTab}
           />
         )}
+
         {CATEGORIES.map(
           cat =>
             tab === cat.key && (
@@ -146,12 +171,22 @@ export default function App() {
                 key={cat.key}
                 config={cat}
                 tasks={store[cat.key]}
+                projects={store.projects}
                 progress={progress[cat.key]}
-                onAdd={text => addTask(cat.key, text)}
+                onAdd={task => addTask(cat.key, task)}
                 onToggle={id => toggleTask(cat.key, id)}
                 onDelete={id => deleteTask(cat.key, id)}
               />
             )
+        )}
+
+        {tab === 'projects' && (
+          <ProjectsView
+            projects={store.projects}
+            tasks={{ obvs: store.obvs, lps: store.lps, bookpoints: store.bookpoints }}
+            onAddProject={addProject}
+            onDeleteProject={deleteProject}
+          />
         )}
       </main>
 

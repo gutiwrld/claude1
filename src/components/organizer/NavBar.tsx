@@ -91,13 +91,62 @@ const items: NavItem[] = [
       </svg>
     ),
   },
+  {
+    id: 'projects',
+    label: 'Proyectos',
+    icon: active => (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect
+          x="3"
+          y="3"
+          width="8"
+          height="8"
+          rx="2"
+          stroke="currentColor"
+          strokeWidth={active ? 2.5 : 1.8}
+          fill={active ? 'currentColor' : 'none'}
+          fillOpacity={0.18}
+        />
+        <rect
+          x="13"
+          y="3"
+          width="8"
+          height="8"
+          rx="2"
+          stroke="currentColor"
+          strokeWidth={active ? 2.5 : 1.8}
+        />
+        <rect
+          x="3"
+          y="13"
+          width="8"
+          height="8"
+          rx="2"
+          stroke="currentColor"
+          strokeWidth={active ? 2.5 : 1.8}
+        />
+        <rect
+          x="13"
+          y="13"
+          width="8"
+          height="8"
+          rx="2"
+          stroke="currentColor"
+          strokeWidth={active ? 2.5 : 1.8}
+          fill={active ? 'currentColor' : 'none'}
+          fillOpacity={0.18}
+        />
+      </svg>
+    ),
+  },
 ]
 
 const ACTIVE_COLORS: Record<Tab, string> = {
   dashboard: '#a78bfa',
-  obvs: '#8b5cf6',
-  lps: '#06b6d4',
-  bookpoints: '#f97316',
+  obvs: '#a78bfa',
+  lps: '#38bdf8',
+  bookpoints: '#fb923c',
+  projects: '#34d399',
 }
 
 interface Props {
@@ -115,9 +164,9 @@ export function NavBar({ active, onChange }: Props) {
         left: 0,
         right: 0,
         zIndex: 40,
-        background: 'rgba(8,8,15,0.93)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
+        background: 'rgba(6,6,14,0.94)',
+        backdropFilter: 'blur(28px)',
+        WebkitBackdropFilter: 'blur(28px)',
         borderTop: '1px solid rgba(255,255,255,0.07)',
         paddingBottom: 'env(safe-area-inset-bottom, 8px)',
       }}
@@ -133,7 +182,7 @@ export function NavBar({ active, onChange }: Props) {
       >
         {items.map(item => {
           const isActive = active === item.id
-          const color = isActive ? ACTIVE_COLORS[item.id] : 'rgba(240,240,255,0.3)'
+          const color = isActive ? ACTIVE_COLORS[item.id] : 'rgba(240,240,255,0.28)'
           return (
             <button
               key={item.id}
@@ -156,7 +205,7 @@ export function NavBar({ active, onChange }: Props) {
                 position: 'relative',
                 padding: '8px 0',
               }}
-              onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.88)')}
+              onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.86)')}
               onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
               onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
             >
@@ -164,16 +213,16 @@ export function NavBar({ active, onChange }: Props) {
                 style={{
                   transform: isActive ? 'scale(1.12)' : 'scale(1)',
                   transition: 'transform 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
-                  filter: isActive ? `drop-shadow(0 0 6px ${color}90)` : 'none',
+                  filter: isActive ? `drop-shadow(0 0 7px ${color}95)` : 'none',
                 }}
               >
                 {item.icon(isActive)}
               </div>
               <span
                 style={{
-                  fontSize: 10,
+                  fontSize: 9,
                   fontWeight: isActive ? 700 : 500,
-                  letterSpacing: '0.04em',
+                  letterSpacing: '0.03em',
                   lineHeight: 1,
                 }}
               >
@@ -186,11 +235,11 @@ export function NavBar({ active, onChange }: Props) {
                     top: 0,
                     left: '50%',
                     transform: 'translateX(-50%)',
-                    width: 28,
+                    width: 24,
                     height: 2,
                     borderRadius: 99,
                     background: color,
-                    boxShadow: `0 0 8px ${color}`,
+                    boxShadow: `0 0 10px ${color}`,
                   }}
                 />
               )}

@@ -1,21 +1,25 @@
 import { useState } from 'react'
-import { CategoryConfig, Task } from '../../hooks/useStore'
+import { CategoryConfig, Task, Project } from '../../hooks/useStore'
 import { AddModal } from './AddModal'
+import { OBVModal } from './OBVModal'
+import { OBVCard } from './OBVCard'
 
 interface Props {
   config: CategoryConfig
   tasks: Task[]
+  projects: Project[]
   progress: { done: number; total: number }
-  onAdd: (text: string) => void
+  onAdd: (task: Omit<Task, 'id' | 'createdAt'>) => void
   onToggle: (id: string) => void
   onDelete: (id: string) => void
 }
 
-export function CategoryView({ config, tasks, progress, onAdd, onToggle, onDelete }: Props) {
+export function CategoryView({ config, tasks, projects, progress, onAdd, onToggle, onDelete }: Props) {
   const [showAdd, setShowAdd] = useState(false)
   const pct = progress.total > 0 ? progress.done / progress.total : 0
   const pending = tasks.filter(t => !t.done)
   const done = tasks.filter(t => t.done)
+  const isObvs = config.key === 'obvs'
 
   return (
     <>
@@ -52,10 +56,17 @@ export function CategoryView({ config, tasks, progress, onAdd, onToggle, onDelet
               pointerEvents: 'none',
             }}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginBottom: 16,
+            }}
+          >
             <div>
               <h2 style={{ margin: 0, fontSize: 24, fontWeight: 900, color: '#f0f0ff' }}>
-                {config.label}
+                {config.labelLong}
               </h2>
               <p style={{ margin: '4px 0 0', fontSize: 13, color: 'rgba(240,240,255,0.5)' }}>
                 {progress.done} de {progress.total} completados
@@ -97,20 +108,40 @@ export function CategoryView({ config, tasks, progress, onAdd, onToggle, onDelet
         {/* Pending tasks */}
         {pending.length > 0 && (
           <div>
-            <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,240,255,0.35)' }}>
+            <p
+              style={{
+                margin: '0 0 10px',
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'rgba(240,240,255,0.35)',
+              }}
+            >
               Pendientes — {pending.length}
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {pending.map((task, i) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  config={config}
-                  index={i}
-                  onToggle={() => onToggle(task.id)}
-                  onDelete={() => onDelete(task.id)}
-                />
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {pending.map((task, i) =>
+                isObvs ? (
+                  <OBVCard
+                    key={task.id}
+                    task={task}
+                    index={i}
+                    projects={projects}
+                    onToggle={() => onToggle(task.id)}
+                    onDelete={() => onDelete(task.id)}
+                  />
+                ) : (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    config={config}
+                    index={i}
+                    onToggle={() => onToggle(task.id)}
+                    onDelete={() => onDelete(task.id)}
+                  />
+                )
+              )}
             </div>
           </div>
         )}
@@ -118,20 +149,40 @@ export function CategoryView({ config, tasks, progress, onAdd, onToggle, onDelet
         {/* Completed tasks */}
         {done.length > 0 && (
           <div>
-            <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,240,255,0.35)' }}>
+            <p
+              style={{
+                margin: '0 0 10px',
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'rgba(240,240,255,0.35)',
+              }}
+            >
               Completados — {done.length}
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {done.map((task, i) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  config={config}
-                  index={i}
-                  onToggle={() => onToggle(task.id)}
-                  onDelete={() => onDelete(task.id)}
-                />
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {done.map((task, i) =>
+                isObvs ? (
+                  <OBVCard
+                    key={task.id}
+                    task={task}
+                    index={i}
+                    projects={projects}
+                    onToggle={() => onToggle(task.id)}
+                    onDelete={() => onDelete(task.id)}
+                  />
+                ) : (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    config={config}
+                    index={i}
+                    onToggle={() => onToggle(task.id)}
+                    onDelete={() => onDelete(task.id)}
+                  />
+                )
+              )}
             </div>
           </div>
         )}
@@ -140,11 +191,18 @@ export function CategoryView({ config, tasks, progress, onAdd, onToggle, onDelet
         {tasks.length === 0 && (
           <div style={{ textAlign: 'center', paddingTop: 64, paddingBottom: 32 }}>
             <div style={{ fontSize: 52, marginBottom: 14 }}>{config.emoji}</div>
-            <p style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'rgba(240,240,255,0.3)' }}>
-              Sin tareas todavía
+            <p
+              style={{
+                margin: 0,
+                fontSize: 16,
+                fontWeight: 600,
+                color: 'rgba(240,240,255,0.3)',
+              }}
+            >
+              Sin {config.label} todavía
             </p>
             <p style={{ margin: '6px 0 0', fontSize: 13, color: 'rgba(240,240,255,0.2)' }}>
-              Toca el botón + para añadir la primera
+              Toca el botón + para añadir
             </p>
           </div>
         )}
@@ -153,7 +211,7 @@ export function CategoryView({ config, tasks, progress, onAdd, onToggle, onDelet
       {/* FAB */}
       <button
         onClick={() => setShowAdd(true)}
-        aria-label={`Añadir tarea a ${config.label}`}
+        aria-label={`Añadir ${config.label}`}
         style={{
           position: 'fixed',
           bottom: 'max(84px, calc(76px + env(safe-area-inset-bottom)))',
@@ -191,16 +249,26 @@ export function CategoryView({ config, tasks, progress, onAdd, onToggle, onDelet
         </svg>
       </button>
 
-      {showAdd && (
-        <AddModal
-          config={config}
-          onAdd={text => {
-            onAdd(text)
-            setShowAdd(false)
-          }}
-          onClose={() => setShowAdd(false)}
-        />
-      )}
+      {showAdd &&
+        (isObvs ? (
+          <OBVModal
+            projects={projects}
+            onAdd={task => {
+              onAdd(task)
+              setShowAdd(false)
+            }}
+            onClose={() => setShowAdd(false)}
+          />
+        ) : (
+          <AddModal
+            config={config}
+            onAdd={task => {
+              onAdd(task)
+              setShowAdd(false)
+            }}
+            onClose={() => setShowAdd(false)}
+          />
+        ))}
     </>
   )
 }
@@ -229,9 +297,10 @@ function TaskCard({
         alignItems: 'center',
         gap: 12,
         background: task.done ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)',
-        border: `1px solid ${task.done ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)'}`,
+        border: `1px solid ${task.done ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.07)'}`,
         animation: `slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) ${index * 40}ms both`,
         transition: 'background 0.3s, border-color 0.3s',
+        opacity: task.done ? 0.6 : 1,
       }}
     >
       {/* Checkbox */}
@@ -246,7 +315,7 @@ function TaskCard({
           width: 24,
           height: 24,
           borderRadius: '50%',
-          border: `2px solid ${task.done ? config.color : 'rgba(255,255,255,0.22)'}`,
+          border: `2px solid ${task.done ? config.color : 'rgba(255,255,255,0.2)'}`,
           background: task.done ? config.color : 'transparent',
           display: 'flex',
           alignItems: 'center',
@@ -281,7 +350,7 @@ function TaskCard({
           color: task.done ? 'rgba(240,240,255,0.3)' : 'rgba(240,240,255,0.88)',
           textDecoration: task.done ? 'line-through' : 'none',
           textDecorationColor: 'rgba(240,240,255,0.2)',
-          transition: 'color 0.3s, text-decoration 0.3s',
+          transition: 'color 0.3s',
           wordBreak: 'break-word',
         }}
       >
@@ -298,7 +367,7 @@ function TaskCard({
           height: 28,
           borderRadius: 8,
           border: 'none',
-          background: 'rgba(248, 113, 113, 0.08)',
+          background: 'rgba(248,113,113,0.07)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -322,7 +391,12 @@ function TaskCard({
         }}
       >
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M6 18L18 6M6 6l12 12" stroke="#f87171" strokeWidth="2.5" strokeLinecap="round" />
+          <path
+            d="M6 18L18 6M6 6l12 12"
+            stroke="#f87171"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
         </svg>
       </button>
     </div>

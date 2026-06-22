@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
 export type Category = 'obvs' | 'lps' | 'bookpoints'
-export type Tab = 'dashboard' | Category | 'projects'
+export type Tab = 'dashboard' | Category | 'projects' | 'profile'
 
 export const OBV_TIPOS = [
   'No participante',

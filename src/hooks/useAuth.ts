@@ -5,8 +5,10 @@ import { supabase } from '../lib/supabase'
 export interface AuthState {
   user: User | null
   loading: boolean
-  signInWithEmail: (email: string) => Promise<{ error: string | null }>
+  signIn: (email: string, password: string) => Promise<{ error: string | null }>
+  signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
+  updateProfile: (updates: { name: string }) => Promise<{ error: string | null }>
 }
 
 export function useAuth(): AuthState {
@@ -14,13 +16,11 @@ export function useAuth(): AuthState {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get current session on mount
     supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user ?? null)
       setLoading(false)
     })
 
-    // Listen for auth changes (magic link callback, sign out, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       setLoading(false)
@@ -29,9 +29,19 @@ export function useAuth(): AuthState {
     return () => subscription.unsubscribe()
   }, [])
 
-  const signInWithEmail = async (email: string): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signInWithOtp({
+  const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
+    const { error } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
+      password,
+    })
+    return { error: error?.message ?? null }
+  }
+
+  const signUp = async (email: string, password: string, name: string): Promise<{ error: string | null }> => {
+    const { error } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: { data: { full_name: name.trim() } },
     })
     return { error: error?.message ?? null }
   }
@@ -40,5 +50,13 @@ export function useAuth(): AuthState {
     await supabase.auth.signOut()
   }
 
-  return { user, loading, signInWithEmail, signOut }
+  const updateProfile = async (updates: { name: string }): Promise<{ error: string | null }> => {
+    const { data, error } = await supabase.auth.updateUser({
+      data: { full_name: updates.name.trim() },
+    })
+    if (data.user) setUser(data.user)
+    return { error: error?.message ?? null }
+  }
+
+  return { user, loading, signIn, signUp, signOut, updateProfile }
 }

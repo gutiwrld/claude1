@@ -9,12 +9,13 @@ interface Props {
   tasks: Task[]
   projects: Project[]
   progress: { done: number; total: number }
+  isDesktop?: boolean
   onAdd: (task: Omit<Task, 'id' | 'createdAt'>) => void
   onToggle: (id: string) => void
   onDelete: (id: string) => void
 }
 
-export function CategoryView({ config, tasks, projects, progress, onAdd, onToggle, onDelete }: Props) {
+export function CategoryView({ config, tasks, projects, progress, isDesktop, onAdd, onToggle, onDelete }: Props) {
   const [showAdd, setShowAdd] = useState(false)
   const pct = progress.total > 0 ? progress.done / progress.total : 0
   const pending = tasks.filter(t => !t.done)
@@ -26,7 +27,7 @@ export function CategoryView({ config, tasks, projects, progress, onAdd, onToggl
       <div
         style={{
           padding: '12px 20px',
-          paddingBottom: 'max(96px, calc(80px + env(safe-area-inset-bottom)))',
+          paddingBottom: isDesktop ? '48px' : 'max(96px, calc(80px + env(safe-area-inset-bottom)))',
           display: 'flex',
           flexDirection: 'column',
           gap: 20,
@@ -214,8 +215,8 @@ export function CategoryView({ config, tasks, projects, progress, onAdd, onToggl
         aria-label={`Añadir ${config.label}`}
         style={{
           position: 'fixed',
-          bottom: 'max(84px, calc(76px + env(safe-area-inset-bottom)))',
-          right: 20,
+          bottom: isDesktop ? 24 : 'max(84px, calc(76px + env(safe-area-inset-bottom)))',
+          right: 24,
           width: 56,
           height: 56,
           borderRadius: 18,

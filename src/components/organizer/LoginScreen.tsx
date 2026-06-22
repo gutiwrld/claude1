@@ -1,30 +1,62 @@
 import { useState } from 'react'
 
 interface Props {
-  onLogin: (email: string) => Promise<{ error: string | null }>
+  onSignIn: (email: string, password: string) => Promise<{ error: string | null }>
+  onSignUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>
 }
 
-export function LoginScreen({ onLogin }: Props) {
+function fieldStyle(hasError = false): React.CSSProperties {
+  return {
+    width: '100%',
+    borderRadius: 13,
+    padding: '13px 16px',
+    fontSize: 15,
+    fontWeight: 500,
+    outline: 'none',
+    background: 'rgba(255,255,255,0.05)',
+    border: `1.5px solid ${hasError ? '#f87171' : 'rgba(255,255,255,0.1)'}`,
+    color: '#f0f0ff',
+    caretColor: '#a78bfa',
+    transition: 'border-color 0.2s',
+    boxSizing: 'border-box',
+    fontFamily: 'inherit',
+  }
+}
+
+export function LoginScreen({ onSignIn, onSignUp }: Props) {
+  const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
-  const [sent, setSent] = useState(false)
+  const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const switchMode = (m: 'login' | 'register') => {
+    setMode(m)
+    setError(null)
+  }
+
+  const canSubmit =
+    email.trim().includes('@') &&
+    password.length >= 6 &&
+    (mode === 'login' || name.trim().length > 0)
+
   const submit = async () => {
-    const trimmed = email.trim()
-    if (!trimmed || !trimmed.includes('@')) {
-      setError('Introduce un email válido')
+    if (!canSubmit) {
+      if (!email.trim().includes('@')) { setError('Introduce un email válido'); return }
+      if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return }
+      if (mode === 'register' && !name.trim()) { setError('Introduce tu nombre'); return }
       return
     }
     setLoading(true)
     setError(null)
-    const { error } = await onLogin(trimmed)
+    const result =
+      mode === 'login'
+        ? await onSignIn(email, password)
+        : await onSignUp(email, password, name)
     setLoading(false)
-    if (error) {
-      setError(error)
-    } else {
-      setSent(true)
-    }
+    if (result.error) setError(result.error)
   }
 
   return (
@@ -46,10 +78,10 @@ export function LoginScreen({ onLogin }: Props) {
           position: 'absolute',
           left: '-10%',
           top: '10%',
-          width: 300,
-          height: 300,
+          width: 320,
+          height: 320,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(124,58,237,0.22) 0%, transparent 70%)',
           filter: 'blur(60px)',
           pointerEvents: 'none',
         }}
@@ -82,8 +114,8 @@ export function LoginScreen({ onLogin }: Props) {
           zIndex: 1,
         }}
       >
-        {/* Logo / title */}
-        <div style={{ marginBottom: 32, textAlign: 'center' }}>
+        {/* Logo */}
+        <div style={{ marginBottom: 28, textAlign: 'center' }}>
           <div
             style={{
               fontSize: 40,
@@ -108,151 +140,180 @@ export function LoginScreen({ onLogin }: Props) {
             style={{
               margin: '8px 0 0',
               fontSize: 14,
-              color: 'rgba(240,240,255,0.45)',
+              color: 'rgba(240,240,255,0.4)',
               lineHeight: 1.5,
             }}
           >
-            Accede con tu email para sincronizar<br />tu progreso en todos tus dispositivos
+            Tu espacio personal para el TFM
           </p>
         </div>
 
-        {sent ? (
-          /* Confirmation state */
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '24px 0',
-            }}
-          >
-            <div style={{ fontSize: 48, marginBottom: 16 }}>📬</div>
-            <p
-              style={{
-                margin: 0,
-                fontSize: 16,
-                fontWeight: 700,
-                color: '#f0f0ff',
-                letterSpacing: '-0.01em',
-              }}
-            >
-              Revisa tu email
-            </p>
-            <p
-              style={{
-                margin: '8px 0 0',
-                fontSize: 13,
-                color: 'rgba(240,240,255,0.5)',
-                lineHeight: 1.6,
-              }}
-            >
-              Hemos enviado un enlace mágico a{' '}
-              <strong style={{ color: '#a78bfa' }}>{email}</strong>.
-              <br />Tócalo para entrar.
-            </p>
+        {/* Mode toggle */}
+        <div
+          style={{
+            display: 'flex',
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: 12,
+            padding: 3,
+            marginBottom: 22,
+            gap: 2,
+          }}
+        >
+          {(['login', 'register'] as const).map(m => (
             <button
-              onClick={() => { setSent(false); setEmail('') }}
+              key={m}
+              onClick={() => switchMode(m)}
               style={{
-                marginTop: 20,
-                background: 'none',
+                flex: 1,
+                padding: '8px',
+                borderRadius: 9,
                 border: 'none',
-                color: 'rgba(240,240,255,0.4)',
+                background: mode === m ? 'rgba(124,58,237,0.32)' : 'transparent',
+                color: mode === m ? '#a78bfa' : 'rgba(240,240,255,0.4)',
                 fontSize: 13,
+                fontWeight: 700,
                 cursor: 'pointer',
-                textDecoration: 'underline',
                 outline: 'none',
+                transition: 'all 0.2s',
+                WebkitTapHighlightColor: 'transparent',
+                fontFamily: 'inherit',
               }}
             >
-              Usar otro email
+              {m === 'login' ? 'Entrar' : 'Registrarse'}
             </button>
+          ))}
+        </div>
+
+        {/* Fields */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {mode === 'register' && (
+            <div>
+              <label style={labelStyle}>Nombre</label>
+              <input
+                type="text"
+                value={name}
+                onChange={e => { setName(e.target.value); setError(null) }}
+                placeholder="Tu nombre"
+                autoFocus
+                style={fieldStyle(!!error && mode === 'register' && !name.trim())}
+              />
+            </div>
+          )}
+
+          <div>
+            <label style={labelStyle}>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => { setEmail(e.target.value); setError(null) }}
+              placeholder="tu@email.com"
+              autoComplete="email"
+              autoFocus={mode === 'login'}
+              style={fieldStyle(!!error && !email.includes('@'))}
+            />
           </div>
-        ) : (
-          /* Login form */
-          <>
-            <div style={{ marginBottom: 14 }}>
-              <label
+
+          <div>
+            <label style={labelStyle}>Contraseña</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPw ? 'text' : 'password'}
+                value={password}
+                onChange={e => { setPassword(e.target.value); setError(null) }}
+                onKeyDown={e => e.key === 'Enter' && submit()}
+                placeholder={mode === 'register' ? 'Mínimo 6 caracteres' : '••••••••'}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                style={{ ...fieldStyle(!!error && password.length < 6), paddingRight: 46 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw(v => !v)}
                 style={{
-                  display: 'block',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: 'rgba(240,240,255,0.45)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                  marginBottom: 8,
+                  position: 'absolute',
+                  right: 12,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'rgba(240,240,255,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: 4,
+                  outline: 'none',
                 }}
               >
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => { setEmail(e.target.value); setError(null) }}
-                onKeyDown={e => e.key === 'Enter' && submit()}
-                placeholder="tu@email.com"
-                autoComplete="email"
-                autoFocus
-                style={{
-                  width: '100%',
-                  borderRadius: 14,
-                  padding: '14px 16px',
-                  fontSize: 15,
-                  fontWeight: 500,
-                  outline: 'none',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: `1.5px solid ${error ? '#f87171' : email ? 'rgba(124,58,237,0.6)' : 'rgba(255,255,255,0.08)'}`,
-                  color: '#f0f0ff',
-                  caretColor: '#a78bfa',
-                  transition: 'border-color 0.2s',
-                  boxSizing: 'border-box',
-                }}
-              />
-              {error && (
-                <p style={{ margin: '6px 0 0', fontSize: 12, color: '#f87171' }}>{error}</p>
-              )}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  {showPw ? (
+                    <>
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    </>
+                  ) : (
+                    <>
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" />
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+                    </>
+                  )}
+                </svg>
+              </button>
             </div>
+          </div>
+        </div>
 
-            <button
-              onClick={submit}
-              disabled={loading || !email.trim()}
-              style={{
-                width: '100%',
-                padding: '15px',
-                borderRadius: 14,
-                border: 'none',
-                background:
-                  email.trim() && !loading
-                    ? 'linear-gradient(135deg, #7c3aed, #a78bfa)'
-                    : 'rgba(255,255,255,0.06)',
-                color: email.trim() && !loading ? '#fff' : 'rgba(240,240,255,0.3)',
-                fontSize: 15,
-                fontWeight: 700,
-                cursor: email.trim() && !loading ? 'pointer' : 'default',
-                outline: 'none',
-                WebkitTapHighlightColor: 'transparent',
-                boxShadow:
-                  email.trim() && !loading ? '0 4px 24px rgba(124,58,237,0.4)' : 'none',
-                transition: 'all 0.2s',
-                letterSpacing: '0.01em',
-              }}
-              onPointerDown={e => { if (email.trim()) e.currentTarget.style.transform = 'scale(0.97)' }}
-              onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-              onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-            >
-              {loading ? 'Enviando…' : 'Enviar enlace mágico ✦'}
-            </button>
-
-            <p
-              style={{
-                margin: '16px 0 0',
-                fontSize: 12,
-                color: 'rgba(240,240,255,0.3)',
-                textAlign: 'center',
-                lineHeight: 1.5,
-              }}
-            >
-              Sin contraseña — recibirás un enlace de acceso directo
-            </p>
-          </>
+        {error && (
+          <p style={{ margin: '10px 0 0', fontSize: 12, color: '#f87171', lineHeight: 1.4 }}>
+            {error}
+          </p>
         )}
+
+        <button
+          onClick={submit}
+          disabled={loading}
+          style={{
+            width: '100%',
+            padding: '15px',
+            borderRadius: 14,
+            border: 'none',
+            marginTop: 18,
+            background:
+              canSubmit && !loading
+                ? 'linear-gradient(135deg, #7c3aed, #a78bfa)'
+                : 'rgba(255,255,255,0.06)',
+            color: canSubmit && !loading ? '#fff' : 'rgba(240,240,255,0.3)',
+            fontSize: 15,
+            fontWeight: 700,
+            cursor: canSubmit && !loading ? 'pointer' : 'default',
+            outline: 'none',
+            WebkitTapHighlightColor: 'transparent',
+            boxShadow: canSubmit && !loading ? '0 4px 24px rgba(124,58,237,0.4)' : 'none',
+            transition: 'all 0.2s',
+            fontFamily: 'inherit',
+          }}
+          onPointerDown={e => {
+            if (canSubmit) e.currentTarget.style.transform = 'scale(0.97)'
+          }}
+          onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+          onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+        >
+          {loading
+            ? 'Cargando…'
+            : mode === 'login'
+              ? 'Entrar ✦'
+              : 'Crear cuenta ✦'}
+        </button>
       </div>
     </div>
   )
+}
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: 11,
+  fontWeight: 700,
+  color: 'rgba(240,240,255,0.4)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  marginBottom: 6,
 }

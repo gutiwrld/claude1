@@ -147,6 +147,7 @@ const ACTIVE_COLORS: Record<Tab, string> = {
   lps: '#38bdf8',
   bookpoints: '#fb923c',
   projects: '#34d399',
+  profile: '#f472b6',
 }
 
 interface Props {

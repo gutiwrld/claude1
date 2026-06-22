@@ -5,6 +5,7 @@ import { AddProjectModal } from './AddProjectModal'
 interface Props {
   projects: Project[]
   tasks: Record<Category, Task[]>
+  isDesktop?: boolean
   onAddProject: (project: Omit<Project, 'id' | 'createdAt'>) => void
   onDeleteProject: (id: string) => void
 }
@@ -13,7 +14,7 @@ const COLOR = '#059669'
 const COLOR_LIGHT = '#34d399'
 const COLOR_GLOW = 'rgba(5,150,105,0.35)'
 
-export function ProjectsView({ projects, tasks, onAddProject, onDeleteProject }: Props) {
+export function ProjectsView({ projects, tasks, isDesktop, onAddProject, onDeleteProject }: Props) {
   const [showAdd, setShowAdd] = useState(false)
 
   function getLinkedCounts(projectId: string) {
@@ -29,7 +30,7 @@ export function ProjectsView({ projects, tasks, onAddProject, onDeleteProject }:
       <div
         style={{
           padding: '12px 20px',
-          paddingBottom: 'max(96px, calc(80px + env(safe-area-inset-bottom)))',
+          paddingBottom: isDesktop ? '48px' : 'max(96px, calc(80px + env(safe-area-inset-bottom)))',
           display: 'flex',
           flexDirection: 'column',
           gap: 20,
@@ -129,8 +130,8 @@ export function ProjectsView({ projects, tasks, onAddProject, onDeleteProject }:
         aria-label="Añadir proyecto"
         style={{
           position: 'fixed',
-          bottom: 'max(84px, calc(76px + env(safe-area-inset-bottom)))',
-          right: 20,
+          bottom: isDesktop ? 24 : 'max(84px, calc(76px + env(safe-area-inset-bottom)))',
+          right: 24,
           width: 56,
           height: 56,
           borderRadius: 18,

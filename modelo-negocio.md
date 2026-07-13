@@ -29,6 +29,13 @@ Marco: Desirability / Feasibility / Viability (Bland & Osterwalder, *Testing Bus
 
 Versión corta para el sello físico/QR: **"Alérgenos verificados con evidencia · Última revisión: [fecha]"**.
 
+**Capa B2C (decisión 13/07/2026):** sobre ese núcleo se añade el **perfil de alergias del usuario**: guarda una vez
+tus alérgenos y tu nivel de gravedad, y al escanear el QR de un local verificado la carta se filtra sola a tu perfil
+("esto puedes comerlo, esto no, esto tiene trazas"). Como evolución posterior (no MVP), un **aviso a cocina**
+opt-in, disponible únicamente en locales verificados que hayan aceptado un protocolo de sala. El perfil es la
+experiencia; la verificación sigue siendo el negocio y el foso. El aviso **complementa, nunca sustituye,** avisar en
+persona — la app lo dirá explícitamente cada vez.
+
 Lo que **no** somos (y esto es el foso frente a Alergenu/Egourmet): no somos otra carta digital que ayuda al
 restaurante a declarar; somos quien **audita la declaración**. Ellos son TurboTax; nosotros somos el auditor.
 Consecuencia incómoda: nuestro producto es más caro de operar, más lento de escalar y con más responsabilidad.
@@ -55,7 +62,9 @@ Ese es el precio del diferencial.
   repite donde se siente seguro—; (b) expediente de diligencia debida ante inspección/reclamación (RD 126/2015);
   (c) carta QR filtrable incluida, con lo que sustituye (no suma) al gasto en carta digital.
 - **Para el alérgico:** dejar de fiarse de la palabra del camarero; ver qué locales tienen la información contrastada,
-  cuándo se revisó por última vez, y poder reportar discrepancias que alguien de verdad investiga.
+  cuándo se revisó por última vez, y poder reportar discrepancias que alguien de verdad investiga. Con el **perfil de
+  alergias**, además, no filtra la carta a mano: escanea y ve directamente qué puede comer según sus alérgenos y su
+  nivel de gravedad. El perfil convierte el sello (confianza) en comodidad diaria (retención).
 - **Honestidad interna:** el restaurante compra **marketing + protección**, no compliance (el compliance ya lo cree
   tener). El pitch de venta debe liderar con "te traigo mesas de 4–6 personas que repiten", no con el Reglamento.
 
@@ -82,6 +91,11 @@ Ver sección 3 (precios). Resumen: setup de verificación inicial + cuota recurr
   activo. Documentarlo desde el piloto 1 como si fuera a auditarlo un tercero.
 - Marca de confianza (naming, sello, tono) y su respaldo jurídico (términos redactados por abogado alimentario).
 - Base de datos estructurada plato→ingrediente→alérgeno→evidencia con trazabilidad de fechas.
+- **Estrategia RGPD del perfil de alergias:** un perfil de alergias es dato de salud (categoría especial, art. 9
+  RGPD). Decisión de diseño: en el MVP **el perfil vive solo en el dispositivo del usuario** (localStorage) y el
+  filtrado de la carta se hace en el cliente — ningún dato de salud toca nuestros servidores ni se envía al
+  restaurante. El aviso a cocina (que sí implica transmitir el perfil) queda para una fase posterior, con
+  consentimiento explícito por envío y asesoría legal previa.
 - Tú: conocimiento vivido del problema + capacidad técnica (Supabase, automatización, IA como copiloto del revisor).
 - **Seguro de responsabilidad civil profesional** en cuanto haya un solo sello en la calle. No es opcional.
 
@@ -133,7 +147,8 @@ Ver sección 3 (precios). Resumen: setup de verificación inicial + cuota recurr
 
 ### B2C (consumidores) — gratis, y punto (por ahora)
 
-- **Gratis:** buscar locales verificados, carta filtrada por alérgeno, fecha de última revisión, reportar discrepancias.
+- **Gratis:** buscar locales verificados, carta filtrada por alérgeno, **perfil de alergias con filtrado automático
+  al escanear**, fecha de última revisión, reportar discrepancias.
 - **Sin plan premium los primeros 12–18 meses.** Razón: el activo B2C es la **densidad de usuarios que reportan y
   recomiendan**; cualquier fricción de pago la mata, y el ARPU realista de una app de nicho (2–3 €/mes con conversión
   del 2–5 % sobre una base pequeña) es ruido frente a una sola cuota B2B. El freemium B2C queda en el roadmap
@@ -220,6 +235,22 @@ se testea con ventas reales, no con encuestas.** El B2C se valida en paralelo po
 - **Racional:** allí la obligación es contractual, el comprador es profesional y un incidente les cuesta el contrato.
   Peor para el alma (menos visible), mejor para la cartera.
 
+### EC-7 · Aviso a cocina — *Desirability de la evolución del perfil* (barato, en paralelo)
+
+- **Hipótesis doble:** (a) el alérgico quiere anunciar su presencia y perfil a la cocina desde la app; (b) el
+  restaurante verificado está dispuesto a recibir ese aviso en servicio y a comprometerse a un protocolo de sala
+  (quién lo lee, quién confirma, qué hace cocina).
+- **Test:** cero código. Lado usuario: pregunta específica en las entrevistas/encuesta de EC-2 sobre comportamiento
+  actual ("¿avisas siempre? ¿te incomoda? ¿usarías un aviso desde el móvil… y avisarías TAMBIÉN en persona?").
+  Lado restaurante: en los pilotos de EC-3, simular el flujo con un WhatsApp al encargado en hora punta y observar
+  si alguien lo lee y en cuánto tiempo.
+- **Métrica:** % de usuarios que lo quieren pero admiten que dejarían de avisar en persona (⚠️ métrica de riesgo,
+  no de éxito); tiempo de lectura/confirmación del aviso en servicio real.
+- **Criterio de decisión:** solo pasa a roadmap si los restaurantes confirman lectura en < 5 min en hora punta Y el
+  diseño puede reforzar (no sustituir) el aviso verbal. Si los usuarios lo interpretan como "ya no hace falta que
+  diga nada", la feature es peligrosa y se descarta o se rediseña.
+- **Coste/tiempo:** 0 € · dentro de EC-2 y EC-3.
+
 ---
 
 ## 5. MVP Wizard of Oz (mínimo trabajo de campo)
@@ -239,12 +270,17 @@ El usuario no lo sabe ni le importa.
 3. **Salida B2C:** página pública por restaurante (esto sí merece ser web real desde el inicio, es la cara del
    producto): carta filtrable por los 14 alérgenos, sello con fecha de última revisión, botón "reportar discrepancia"
    (un formulario que te llega a ti). QR impreso en mesa/puerta.
+   **Perfil de alergias en el MVP:** se guarda en el dispositivo (localStorage), sin cuenta ni backend — al escanear
+   cualquier QR de la red, la carta llega ya filtrada a tu perfil. Coste de desarrollo casi nulo, cero RGPD, y es la
+   feature que hace que el usuario vuelva.
 4. **Vigencia:** recordatorio mensual automatizado (n8n) al restaurante: "¿ha cambiado algo? responde SÍ/NO".
    Sin respuesta en 15 días → el sello pasa a "revisión pendiente" visible públicamente. Esta mecánica ES el producto:
    la autodeclaración caduca; la nuestra, no, porque la vigilamos.
 
 **Lo que NO se hace en el WoZ:** IA propia de extracción, panel B2B self-service, app nativa, pagos online
-(se factura a mano), multi-idioma, celíacos como segmento (FACE ya lo cubre).
+(se factura a mano), multi-idioma, celíacos como segmento (FACE ya lo cubre), y el **aviso a cocina** (requiere
+recepción en tiempo real en el restaurante, protocolo de sala y tratamiento de datos de salud; solo entra en roadmap
+si EC-7 lo valida).
 
 ---
 
@@ -255,7 +291,8 @@ EC-1 + EC-2 en paralelo · EC-4 (abogado) · elegir los 2 barrios objetivo · co
 · naming y sello (borrador) · **decisión Go/No-Go nº1** con los criterios de las experiment cards.
 
 **Días 31–60 · Verificar de verdad (WoZ):**
-EC-3 completa (2 locales, cronometrada) · construir SOLO la página B2C pública + formulario de reporte (fase 2 de este
+EC-3 completa (2 locales, cronometrada) · construir SOLO la página B2C pública (con perfil de alergias en
+dispositivo y filtrado automático) + formulario de reporte (fase 2 de este
 proyecto) · material de venta con las discrepancias reales encontradas · contratar seguro RC si hay sello en la calle
 · primeros 20–30 usuarios B2C vía asociaciones sobre los locales piloto.
 
@@ -281,7 +318,11 @@ verificar documentalmente**: tu sello cubre la información, no la ejecución.
 sello, web y contrato (EC-4); (b) caducidad visible y automática del sello con re-declaración mensual;
 (c) seguro RC profesional antes del primer sello público; (d) el canal de reportes B2C tratado como sistema de
 alerta temprana con SLA propio (todo reporte investigado en < 72 h); (e) exclusión explícita de la contaminación
-cruzada del alcance, dicha en voz alta al alérgico (paradójicamente, esta honestidad aumenta la confianza).
+cruzada del alcance, dicha en voz alta al alérgico (paradójicamente, esta honestidad aumenta la confianza);
+(f) el **aviso a cocina** es un caso particular de este riesgo: si el usuario cree que la notificación sustituye al
+aviso verbal y nadie la lee en hora punta, la app habrá creado el incidente — por eso solo existe en locales
+verificados con protocolo aceptado, con confirmación de lectura, y con el recordatorio "avisa también en persona"
+en cada envío (criterios de EC-7).
 
 ### R2 · El restaurante no paga la prima de verificación (riesgo más probable)
 El hostelero medio español opera con márgenes del 5–10 %, sufre fatiga de vendedores de SaaS y cree que su carta
@@ -305,7 +346,16 @@ dominas solo automatiza errores).
 
 ---
 
-## 8. Qué me tienes que confirmar antes de la Fase 2
+## 8. Registro de decisiones
+
+- **13/07/2026 — Perfil de alergias como capa, no como pivot.** Se propuso pivotar a un modelo de "perfil del
+  alérgico + notificación automática de presencia al restaurante vía QR". Decisión: mantener la verificación como
+  núcleo del negocio e integrar el perfil como capa B2C (filtrado automático de la carta, perfil en dispositivo) y
+  el aviso a cocina como evolución condicionada a EC-7. Motivos: la notificación por sí sola no corrige la
+  información errónea (el problema original), compite contra "avisar al camarero" (gratis), crea riesgo de falsa
+  seguridad si nadie la lee en servicio, implica datos de salud (art. 9 RGPD) y deja sin responder quién paga.
+
+## 9. Qué me tienes que confirmar antes de la Fase 2
 
 1. ¿Aceptas el reposicionamiento **"verificación documental independiente"** (sin promesa legal, sin la palabra
    "certificación") o quieres pelear el enfoque legal con un abogado antes?

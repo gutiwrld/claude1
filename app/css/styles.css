@@ -1,0 +1,313 @@
+/* Salvia — estética calma (referencias: Opal, Un Respiro).
+   Mobile-first. Sin iconografía de peligro: verdes salvia, crema, ámbar suave. */
+
+:root {
+  --ink: #26332c;
+  --muted: #6f7d73;
+  --accent: #3e6b52;
+  --accent-deep: #2c503c;
+  --accent-soft: #e4eee6;
+  --card: rgba(255, 255, 255, 0.78);
+  --card-border: rgba(62, 107, 82, 0.12);
+  --amber: #a06b1f;
+  --amber-soft: #f8eed8;
+  --ok: #2f7a4d;
+  --ok-soft: #e0f0e5;
+  --radius: 24px;
+  --shadow: 0 10px 30px rgba(44, 80, 60, 0.10);
+  --font: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 85% -10%, #f3ede0 0%, transparent 60%),
+    radial-gradient(900px 700px at -10% 30%, #e2ecdf 0%, transparent 55%),
+    linear-gradient(165deg, #f6f8f3 0%, #eef3ea 45%, #f5f1e7 100%);
+  background-attachment: fixed;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 20px 48px;
+  animation: fadeUp 0.5s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Cabecera */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 2px 22px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--accent-deep);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+.brand .leaf { font-size: 1.3rem; }
+.top a.minor { color: var(--muted); font-size: 0.85rem; text-decoration: none; }
+
+h1 {
+  font-size: 1.7rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.sub { color: var(--muted); font-size: 0.98rem; margin-bottom: 22px; }
+
+h2 { font-size: 1.02rem; font-weight: 600; margin-bottom: 10px; }
+
+/* Tarjetas */
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  margin-bottom: 16px;
+}
+.card.soft { background: var(--accent-soft); border-color: transparent; box-shadow: none; }
+.card.amber { background: var(--amber-soft); border-color: rgba(160, 107, 31, 0.18); box-shadow: none; }
+.card.ok { background: var(--ok-soft); border-color: rgba(47, 122, 77, 0.18); box-shadow: none; }
+
+/* Chips de alérgenos */
+.chips { display: flex; flex-wrap: wrap; gap: 9px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+.chip:active { transform: scale(0.96); }
+.chip.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.chip.mini { padding: 5px 11px; font-size: 0.82rem; cursor: default; }
+.chip.mini.on { background: var(--accent-soft); border-color: transparent; color: var(--accent-deep); }
+
+/* Segmentado (gravedad) */
+.seg { display: flex; flex-direction: column; gap: 9px; }
+.seg .opt {
+  border: 1.5px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 18px;
+  padding: 13px 16px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.seg .opt .t { font-weight: 600; font-size: 0.95rem; }
+.seg .opt .d { color: var(--muted); font-size: 0.84rem; }
+.seg .opt.on { border-color: var(--accent); background: var(--accent-soft); }
+.seg .opt.on .t { color: var(--accent-deep); }
+
+/* Filas con interruptor */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 6px 0;
+}
+.row .lbl { font-size: 0.95rem; font-weight: 500; }
+.row .hint { color: var(--muted); font-size: 0.83rem; }
+
+.switch { position: relative; width: 50px; height: 30px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .track {
+  position: absolute; inset: 0;
+  background: #d8ded6;
+  border-radius: 999px;
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+.switch .track::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 24px; height: 24px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+.switch input:checked + .track { background: var(--accent); }
+.switch input:checked + .track::after { transform: translateX(20px); }
+
+/* Botones */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 1.02rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.18s ease;
+  box-shadow: 0 8px 20px rgba(44, 80, 60, 0.22);
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+.btn.ghost {
+  background: transparent;
+  color: var(--accent-deep);
+  border: 1.5px solid var(--card-border);
+  box-shadow: none;
+}
+.btn.small { padding: 11px 18px; width: auto; display: inline-block; font-size: 0.9rem; }
+
+/* Formularios */
+input[type='text'], input[type='tel'], input[type='password'], input[type='number'] {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--card-border);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  font-family: var(--font);
+  font-size: 1rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.18s ease;
+}
+input:focus { border-color: var(--accent); }
+label.field { display: block; font-size: 0.85rem; font-weight: 500; color: var(--muted); margin: 12px 0 6px; }
+
+.check {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  font-size: 0.88rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+.check input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; }
+
+/* Respiración (estado de espera, guiño a Un Respiro) */
+.breath-wrap { display: flex; flex-direction: column; align-items: center; padding: 26px 0 10px; }
+.breath {
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #dcebdd, var(--accent-soft));
+  border: 2px solid rgba(62, 107, 82, 0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+  animation: breathe 4s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(62, 107, 82, 0.18); }
+  50% { transform: scale(1.12); box-shadow: 0 0 0 24px rgba(62, 107, 82, 0); }
+}
+.breath-wrap .msg { margin-top: 18px; font-weight: 600; color: var(--accent-deep); }
+.breath-wrap .msg-sub { color: var(--muted); font-size: 0.88rem; margin-top: 4px; }
+
+.confirmed-icon {
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  background: var(--ok-soft);
+  border: 2px solid rgba(47, 122, 77, 0.35);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.4rem;
+  color: var(--ok);
+  animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes pop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* Listas */
+.list { display: flex; flex-direction: column; gap: 12px; }
+.item {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 15px 17px;
+}
+.item .head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.item .t { font-weight: 600; font-size: 0.97rem; }
+.item .meta { color: var(--muted); font-size: 0.83rem; }
+
+.badge {
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge.enviado { background: var(--amber-soft); color: var(--amber); }
+.badge.confirmado { background: var(--ok-soft); color: var(--ok); }
+.badge.adherido { background: var(--accent-soft); color: var(--accent-deep); }
+
+/* Nota permanente de seguridad (siempre visible en el flujo de aviso) */
+.always-note {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 14px 18px 4px;
+}
+.always-note strong { color: var(--ink); }
+
+.divider { height: 1px; background: var(--card-border); margin: 16px 0; }
+
+.footer-nav {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  padding-top: 26px;
+  font-size: 0.85rem;
+}
+.footer-nav a { color: var(--muted); text-decoration: none; }
+.footer-nav a:hover { color: var(--accent-deep); }
+
+.demo-tag {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--amber);
+  background: var(--amber-soft);
+  border-radius: 999px;
+  padding: 5px 12px;
+  display: inline-block;
+  margin-bottom: 14px;
+}
+
+.hidden { display: none !important; }
+
+@media (min-width: 720px) {
+  .wrap { padding-top: 48px; }
+}

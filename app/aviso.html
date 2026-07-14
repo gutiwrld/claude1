@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#eef3ea" />
+  <title>Aviso a cocina — Salvia</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="index.html"><span class="leaf">🌿</span><span data-brand>Salvia</span></a>
+      <a class="minor" href="index.html">Mi perfil</a>
+    </header>
+
+    <!-- Local no encontrado -->
+    <section id="no-local" class="hidden">
+      <h1>Este local no está adherido</h1>
+      <p class="sub">No encontramos este restaurante en la red. Avisa a tu camarero en persona, como siempre, y si quieres, sugiérele que se adhiera.</p>
+      <a class="btn ghost" href="index.html">Volver a mi perfil</a>
+    </section>
+
+    <!-- Sin perfil -->
+    <section id="no-perfil" class="hidden">
+      <h1>Primero, tu perfil</h1>
+      <p class="sub">Para avisar a cocina necesitas guardar tu perfil de alergias. Solo se hace una vez y se queda en tu móvil.</p>
+      <a class="btn" id="crear-perfil-link" href="index.html">Crear mi perfil</a>
+    </section>
+
+    <!-- Consentimiento y envío -->
+    <section id="envio" class="hidden">
+      <h1 id="titulo-local">…</h1>
+      <p class="sub" id="sub-mesa"></p>
+
+      <div class="card">
+        <h2>Esto es lo que enviaremos a cocina</h2>
+        <p class="hint" style="margin-bottom:12px">Sin tu nombre ni ningún otro dato: solo lo que necesitan para cuidarte.</p>
+        <div id="resumen-chips" class="chips" style="margin-bottom:12px"></div>
+        <div id="resumen-detalle" class="hint"></div>
+      </div>
+
+      <div class="card soft">
+        <label class="check">
+          <input id="consentimiento" type="checkbox" />
+          <span>Doy mi consentimiento para enviar estos datos sobre mis alergias a este restaurante, solo para este aviso.</span>
+        </label>
+      </div>
+
+      <button id="enviar" class="btn" disabled>Avisar a cocina</button>
+      <p class="always-note">Este aviso <strong>complementa, no sustituye,</strong> avisar a tu camarero en persona.</p>
+    </section>
+
+    <!-- Estado del aviso -->
+    <section id="estado" class="hidden">
+      <h1 id="estado-titulo">Aviso enviado</h1>
+      <p class="sub" id="estado-sub"></p>
+
+      <div class="card">
+        <div id="esperando" class="breath-wrap">
+          <div class="breath">🌿</div>
+          <div class="msg">Esperando confirmación de sala…</div>
+          <div class="msg-sub">Respira. Te avisamos en cuanto lo lean.</div>
+        </div>
+        <div id="confirmado" class="breath-wrap hidden">
+          <div class="confirmed-icon">✓</div>
+          <div class="msg">Cocina ha confirmado tu aviso</div>
+          <div class="msg-sub" id="hora-confirmacion"></div>
+        </div>
+      </div>
+
+      <div id="timeout-card" class="card amber hidden">
+        <h2>Sin confirmación todavía</h2>
+        <p style="font-size:0.92rem">Han pasado varios minutos y sala aún no ha confirmado tu aviso. <strong>Avisa en persona a tu camarero ahora mismo</strong> — es lo más seguro.</p>
+      </div>
+
+      <p class="always-note">Aunque cocina confirme, <strong>menciona siempre tu alergia a tu camarero.</strong> El aviso queda registrado con fecha y hora en tu historial.</p>
+      <div style="height:10px"></div>
+      <a class="btn ghost" href="index.html">Volver a mi perfil</a>
+    </section>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script type="module" src="js/aviso.js"></script>
+</body>
+</html>

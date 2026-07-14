@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#eef3ea" />
+  <title>Salvia — Come tranquilo</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="index.html"><span class="leaf">🌿</span><span data-brand>Salvia</span></a>
+      <a class="minor" href="locales.html">Locales adheridos</a>
+    </header>
+
+    <div id="demo-tag" class="demo-tag hidden">Modo demo · sin backend, todo queda en este dispositivo</div>
+
+    <!-- ============ ONBOARDING (sin perfil) ============ -->
+    <section id="onboarding" class="hidden">
+      <h1>Come tranquilo.</h1>
+      <p class="sub">Guarda tu perfil de alergias una sola vez. Cuando estés en un restaurante adherido, escanea el QR de tu mesa y la cocina sabrá exactamente cómo cuidarte. Tu perfil se queda en tu móvil: nunca lo subimos a ningún servidor.</p>
+
+      <div class="card">
+        <h2>¿Qué alérgenos debes evitar?</h2>
+        <div id="ob-alergenos" class="chips"></div>
+      </div>
+
+      <div class="card">
+        <h2>¿Cómo de sensible eres?</h2>
+        <div id="ob-gravedad" class="seg"></div>
+        <div class="divider"></div>
+        <div class="row">
+          <div>
+            <div class="lbl">No tolero trazas</div>
+            <div class="hint">Ni contacto con superficies o aceites compartidos</div>
+          </div>
+          <label class="switch"><input id="ob-trazas" type="checkbox" /><span class="track"></span></label>
+        </div>
+        <div class="row">
+          <div>
+            <div class="lbl">Necesito elaboración separada</div>
+            <div class="hint">Mi plato debe prepararse aparte, solo para mí</div>
+          </div>
+          <label class="switch"><input id="ob-separada" type="checkbox" /><span class="track"></span></label>
+        </div>
+      </div>
+
+      <button id="ob-guardar" class="btn" disabled>Guardar mi perfil</button>
+      <p class="always-note">Podrás cambiarlo cuando quieras. Nada sale de tu dispositivo sin tu permiso.</p>
+    </section>
+
+    <!-- ============ HOME (con perfil) ============ -->
+    <section id="home" class="hidden">
+      <h1 id="home-title">Tu perfil está listo</h1>
+      <p class="sub">Cuando llegues a un restaurante adherido, escanea el QR de tu mesa con la cámara del móvil: te traerá de vuelta aquí con todo preparado.</p>
+
+      <div class="card soft">
+        <div class="row" style="padding:0 0 8px">
+          <h2 style="margin:0">Mi perfil</h2>
+          <button id="editar" class="btn ghost small">Editar</button>
+        </div>
+        <div id="perfil-chips" class="chips" style="margin-bottom:10px"></div>
+        <div id="perfil-detalle" class="hint"></div>
+      </div>
+
+      <div class="card">
+        <h2>¿Estás ya en la mesa?</h2>
+        <p class="hint" style="margin-bottom:12px">Si no puedes escanear el QR, introduce el código del local que verás en la cartelería.</p>
+        <label class="field" for="codigo-local">Código del local</label>
+        <input id="codigo-local" type="text" placeholder="ej. la-nonna" autocapitalize="none" autocomplete="off" />
+        <label class="field" for="num-mesa">Número de mesa</label>
+        <input id="num-mesa" type="text" inputmode="numeric" placeholder="ej. 4" />
+        <div style="height:14px"></div>
+        <button id="ir-aviso" class="btn">Preparar aviso a cocina</button>
+      </div>
+
+      <h2 style="margin:22px 0 10px">Tus últimos avisos</h2>
+      <div id="historial" class="list"></div>
+
+      <p class="always-note">Recuerda: el aviso <strong>complementa, no sustituye,</strong> avisar a tu camarero en persona.</p>
+    </section>
+
+    <nav class="footer-nav">
+      <a href="locales.html">Locales adheridos</a>
+      <a href="sala.html">Soy un restaurante</a>
+    </nav>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script type="module" src="js/index.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#eef3ea" />
+  <title>Panel de sala — Salvia</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <a class="brand" href="index.html"><span class="leaf">🌿</span><span data-brand>Salvia</span></a>
+      <a class="minor" href="index.html">Soy cliente</a>
+    </header>
+
+    <!-- Acceso -->
+    <section id="acceso">
+      <h1>Panel de sala</h1>
+      <p class="sub">Para el equipo del restaurante: aquí llegan los avisos de clientes con alergias, para confirmarlos en cuanto los leáis. En el piloto, los avisos también llegan por WhatsApp.</p>
+      <div class="card">
+        <label class="field" for="sala-local">Código del local</label>
+        <input id="sala-local" type="text" placeholder="ej. la-nonna" autocapitalize="none" autocomplete="off" />
+        <label class="field" for="sala-pin">PIN de sala</label>
+        <input id="sala-pin" type="password" inputmode="numeric" placeholder="····" />
+        <div style="height:14px"></div>
+        <button id="entrar" class="btn">Entrar</button>
+        <p class="hint" id="acceso-error" style="margin-top:10px"></p>
+      </div>
+    </section>
+
+    <!-- Panel -->
+    <section id="panel" class="hidden">
+      <h1 id="panel-titulo">…</h1>
+      <p class="sub">Confirma cada aviso en cuanto sala y cocina estén enterados. El cliente ve tu confirmación al instante.</p>
+
+      <h2>Pendientes</h2>
+      <div id="pendientes" class="list" style="margin-bottom:22px"></div>
+
+      <h2>Confirmados hoy</h2>
+      <div id="confirmados" class="list"></div>
+
+      <p class="always-note">Cada confirmación queda registrada con fecha y hora: es vuestro registro de diligencia con los clientes alérgicos.</p>
+    </section>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script type="module" src="js/sala.js"></script>
+</body>
+</html>

@@ -1,9 +1,10 @@
 import { nombreAlergeno, iconoAlergeno, nombreGravedad } from './data.js';
 import { getPerfil, addHistorial, updateHistorial } from './profile.js';
 import { getLocal, crearAviso, onAviso } from './store.js';
+import { initPage, celebrate } from './fx.js';
 
 const $ = (id) => document.getElementById(id);
-document.querySelectorAll('[data-brand]').forEach((el) => (el.textContent = window.APP_CONFIG.appName));
+initPage();
 
 const params = new URLSearchParams(location.search);
 const slug = (params.get('l') || '').toLowerCase();
@@ -93,6 +94,7 @@ function mostrarEstado(aviso, local) {
       $('esperando').classList.add('hidden');
       $('timeout-card').classList.add('hidden');
       $('confirmado').classList.remove('hidden');
+      celebrate($('confirmado').querySelector('.confirmed-icon'));
       $('estado-titulo').textContent = 'Todo listo';
       const hora = new Date(a.confirmado_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
       $('hora-confirmacion').textContent = `Confirmado a las ${hora} · queda registrado en tu historial`;

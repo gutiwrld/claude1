@@ -1,10 +1,11 @@
 import { ALERGENOS, GRAVEDADES, nombreAlergeno, iconoAlergeno, nombreGravedad } from './data.js';
 import { getPerfil, setPerfil, getHistorial } from './profile.js';
 import { DEMO_MODE } from './store.js';
+import { initPage } from './fx.js';
 
 const $ = (id) => document.getElementById(id);
 
-document.querySelectorAll('[data-brand]').forEach((el) => (el.textContent = window.APP_CONFIG.appName));
+initPage();
 if (DEMO_MODE) $('demo-tag').classList.remove('hidden');
 
 const perfil = getPerfil();

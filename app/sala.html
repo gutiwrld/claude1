@@ -3,32 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#eef3ea" />
-  <title>Panel de sala — Salvia</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
+  <meta name="theme-color" content="#07080a" />
+  <title>Panel de sala — Aliva</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><radialGradient id='g' cx='35%25' cy='30%25'><stop offset='0%25' stop-color='%23c8ffe9'/><stop offset='55%25' stop-color='%236fe8b9'/><stop offset='100%25' stop-color='%23a5b4fc'/></radialGradient></defs><circle cx='32' cy='32' r='28' fill='url(%23g)'/></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
+  <canvas id="bg-aurora"></canvas>
   <div class="wrap">
     <header class="top">
-      <a class="brand" href="index.html"><span class="leaf">🌿</span><span data-brand>Salvia</span></a>
+      <a class="brand" href="index.html"><span class="orb-dot"></span><span data-brand>Aliva</span></a>
       <a class="minor" href="index.html">Soy cliente</a>
     </header>
 
     <!-- Acceso -->
     <section id="acceso">
-      <h1>Panel de sala</h1>
-      <p class="sub">Para el equipo del restaurante: aquí llegan los avisos de clientes con alergias, para confirmarlos en cuanto los leáis. En el piloto, los avisos también llegan por WhatsApp.</p>
-      <div class="card">
+      <h1 class="reveal" style="--i:0">Panel de <span class="grad">sala</span></h1>
+      <p class="sub reveal" style="--i:1">Para el equipo del restaurante: aquí llegan los avisos de clientes con alergias, para confirmarlos en cuanto los leáis. En el piloto, los avisos también llegan por WhatsApp.</p>
+      <div class="card reveal" style="--i:2">
         <label class="field" for="sala-local">Código del local</label>
         <input id="sala-local" type="text" placeholder="ej. la-nonna" autocapitalize="none" autocomplete="off" />
         <label class="field" for="sala-pin">PIN de sala</label>
         <input id="sala-pin" type="password" inputmode="numeric" placeholder="····" />
-        <div style="height:14px"></div>
+        <div style="height:16px"></div>
         <button id="entrar" class="btn">Entrar</button>
-        <p class="hint" id="acceso-error" style="margin-top:10px"></p>
+        <p class="hint" id="acceso-error" style="color:var(--peach);font-size:0.85rem;margin-top:10px"></p>
       </div>
     </section>
 
@@ -38,7 +39,7 @@
       <p class="sub">Confirma cada aviso en cuanto sala y cocina estén enterados. El cliente ve tu confirmación al instante.</p>
 
       <h2>Pendientes</h2>
-      <div id="pendientes" class="list" style="margin-bottom:22px"></div>
+      <div id="pendientes" class="list" style="margin-bottom:24px"></div>
 
       <h2>Confirmados hoy</h2>
       <div id="confirmados" class="list"></div>
@@ -46,6 +47,21 @@
       <p class="always-note">Cada confirmación queda registrada con fecha y hora: es vuestro registro de diligencia con los clientes alérgicos.</p>
     </section>
   </div>
+
+  <nav class="tabbar">
+    <a href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 19.5c1.6-3.2 4-4.6 7-4.6s5.4 1.4 7 4.6"/></svg>
+      Perfil
+    </a>
+    <a href="locales.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 21s-6.5-5.4-6.5-10a6.5 6.5 0 0 1 13 0c0 4.6-6.5 10-6.5 10z"/><circle cx="12" cy="10.6" r="2.3"/></svg>
+      Locales
+    </a>
+    <a href="sala.html" class="on">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 9.5a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6"/><path d="M10 19a2.2 2.2 0 0 0 4 0"/></svg>
+      Sala
+    </a>
+  </nav>
 
   <script src="js/config.js"></script>
   <script type="module" src="js/sala.js"></script>

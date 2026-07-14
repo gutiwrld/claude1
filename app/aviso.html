@@ -3,69 +3,71 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#eef3ea" />
-  <title>Aviso a cocina — Salvia</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
+  <meta name="theme-color" content="#07080a" />
+  <title>Aviso a cocina — Aliva</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><radialGradient id='g' cx='35%25' cy='30%25'><stop offset='0%25' stop-color='%23c8ffe9'/><stop offset='55%25' stop-color='%236fe8b9'/><stop offset='100%25' stop-color='%23a5b4fc'/></radialGradient></defs><circle cx='32' cy='32' r='28' fill='url(%23g)'/></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
+  <canvas id="bg-aurora"></canvas>
   <div class="wrap">
     <header class="top">
-      <a class="brand" href="index.html"><span class="leaf">🌿</span><span data-brand>Salvia</span></a>
+      <a class="brand" href="index.html"><span class="orb-dot"></span><span data-brand>Aliva</span></a>
       <a class="minor" href="index.html">Mi perfil</a>
     </header>
 
     <!-- Local no encontrado -->
     <section id="no-local" class="hidden">
-      <h1>Este local no está adherido</h1>
-      <p class="sub">No encontramos este restaurante en la red. Avisa a tu camarero en persona, como siempre, y si quieres, sugiérele que se adhiera.</p>
-      <a class="btn ghost" href="index.html">Volver a mi perfil</a>
+      <h1 class="reveal" style="--i:0">Este local no está adherido</h1>
+      <p class="sub reveal" style="--i:1">No encontramos este restaurante en la red. Avisa a tu camarero en persona, como siempre, y si quieres, sugiérele que se adhiera.</p>
+      <a class="btn ghost reveal" style="--i:2" href="index.html">Volver a mi perfil</a>
     </section>
 
     <!-- Sin perfil -->
     <section id="no-perfil" class="hidden">
-      <h1>Primero, tu perfil</h1>
-      <p class="sub">Para avisar a cocina necesitas guardar tu perfil de alergias. Solo se hace una vez y se queda en tu móvil.</p>
-      <a class="btn" id="crear-perfil-link" href="index.html">Crear mi perfil</a>
+      <div class="orb-wrap reveal" style="--i:0"><div class="orb small"></div></div>
+      <h1 class="reveal" style="--i:1; text-align:center">Primero, tu perfil</h1>
+      <p class="sub reveal" style="--i:2; text-align:center">Para avisar a cocina necesitas guardar tu perfil de alergias. Solo se hace una vez y se queda en tu móvil.</p>
+      <a class="btn reveal" style="--i:3" id="crear-perfil-link" href="index.html">Crear mi perfil</a>
     </section>
 
     <!-- Consentimiento y envío -->
     <section id="envio" class="hidden">
-      <h1 id="titulo-local">…</h1>
-      <p class="sub" id="sub-mesa"></p>
+      <h1 id="titulo-local" class="reveal" style="--i:0">…</h1>
+      <p class="sub reveal" style="--i:1" id="sub-mesa"></p>
 
-      <div class="card">
+      <div class="card reveal" style="--i:2">
         <h2>Esto es lo que enviaremos a cocina</h2>
-        <p class="hint" style="margin-bottom:12px">Sin tu nombre ni ningún otro dato: solo lo que necesitan para cuidarte.</p>
+        <p class="hint" style="color:var(--muted);font-size:0.85rem;margin-bottom:12px">Sin tu nombre ni ningún otro dato: solo lo que necesitan para cuidarte.</p>
         <div id="resumen-chips" class="chips" style="margin-bottom:12px"></div>
-        <div id="resumen-detalle" class="hint"></div>
+        <div id="resumen-detalle" style="color:var(--muted);font-size:0.85rem"></div>
       </div>
 
-      <div class="card soft">
+      <div class="card soft reveal" style="--i:3">
         <label class="check">
           <input id="consentimiento" type="checkbox" />
           <span>Doy mi consentimiento para enviar estos datos sobre mis alergias a este restaurante, solo para este aviso.</span>
         </label>
       </div>
 
-      <button id="enviar" class="btn" disabled>Avisar a cocina</button>
+      <button id="enviar" class="btn reveal" style="--i:4" disabled>Avisar a cocina</button>
       <p class="always-note">Este aviso <strong>complementa, no sustituye,</strong> avisar a tu camarero en persona.</p>
     </section>
 
     <!-- Estado del aviso -->
     <section id="estado" class="hidden">
-      <h1 id="estado-titulo">Aviso enviado</h1>
-      <p class="sub" id="estado-sub"></p>
+      <h1 id="estado-titulo" class="reveal" style="--i:0">Aviso enviado</h1>
+      <p class="sub reveal" style="--i:1" id="estado-sub"></p>
 
-      <div class="card">
-        <div id="esperando" class="breath-wrap">
-          <div class="breath">🌿</div>
+      <div class="card reveal" style="--i:2">
+        <div id="esperando" class="orb-wrap">
+          <div class="orb"></div>
           <div class="msg">Esperando confirmación de sala…</div>
           <div class="msg-sub">Respira. Te avisamos en cuanto lo lean.</div>
         </div>
-        <div id="confirmado" class="breath-wrap hidden">
+        <div id="confirmado" class="orb-wrap hidden">
           <div class="confirmed-icon">✓</div>
           <div class="msg">Cocina ha confirmado tu aviso</div>
           <div class="msg-sub" id="hora-confirmacion"></div>

@@ -26,7 +26,7 @@ const DEMO_LOCALES = [
   { slug: 'alba-brunch', nombre: 'Alba Brunch', barrio: 'Malasaña', direccion: 'C/ del Pez 21', pin_sala: '1234', activo: true },
 ];
 
-const KEY_AVISOS = 'salvia_demo_avisos';
+const KEY_AVISOS = 'aliva_demo_avisos';
 
 function demoAvisos() {
   try {

@@ -3,17 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#eef3ea" />
-  <title>Salvia — Come tranquilo</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>" />
+  <meta name="theme-color" content="#07080a" />
+  <title>Aliva — Come tranquilo</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><radialGradient id='g' cx='35%25' cy='30%25'><stop offset='0%25' stop-color='%23c8ffe9'/><stop offset='55%25' stop-color='%236fe8b9'/><stop offset='100%25' stop-color='%23a5b4fc'/></radialGradient></defs><circle cx='32' cy='32' r='28' fill='url(%23g)'/></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
+  <canvas id="bg-aurora"></canvas>
   <div class="wrap">
     <header class="top">
-      <a class="brand" href="index.html"><span class="leaf">🌿</span><span data-brand>Salvia</span></a>
+      <a class="brand" href="index.html"><span class="orb-dot"></span><span data-brand>Aliva</span></a>
       <a class="minor" href="locales.html">Locales adheridos</a>
     </header>
 
@@ -21,15 +22,18 @@
 
     <!-- ============ ONBOARDING (sin perfil) ============ -->
     <section id="onboarding" class="hidden">
-      <h1>Come tranquilo.</h1>
-      <p class="sub">Guarda tu perfil de alergias una sola vez. Cuando estés en un restaurante adherido, escanea el QR de tu mesa y la cocina sabrá exactamente cómo cuidarte. Tu perfil se queda en tu móvil: nunca lo subimos a ningún servidor.</p>
+      <div class="orb-wrap reveal" style="--i:0">
+        <div class="orb"></div>
+      </div>
+      <h1 class="reveal" style="--i:1; text-align:center">Come <span class="grad">tranquilo</span>.</h1>
+      <p class="sub reveal" style="--i:2; text-align:center">Guarda tu perfil de alergias una sola vez. En un restaurante adherido, escanea el QR de tu mesa y la cocina sabrá exactamente cómo cuidarte. Tu perfil se queda en tu móvil: nunca lo subimos a ningún servidor.</p>
 
-      <div class="card">
+      <div class="card reveal" style="--i:3">
         <h2>¿Qué alérgenos debes evitar?</h2>
         <div id="ob-alergenos" class="chips"></div>
       </div>
 
-      <div class="card">
+      <div class="card reveal" style="--i:4">
         <h2>¿Cómo de sensible eres?</h2>
         <div id="ob-gravedad" class="seg"></div>
         <div class="divider"></div>
@@ -49,46 +53,56 @@
         </div>
       </div>
 
-      <button id="ob-guardar" class="btn" disabled>Guardar mi perfil</button>
+      <button id="ob-guardar" class="btn reveal" style="--i:5" disabled>Guardar mi perfil</button>
       <p class="always-note">Podrás cambiarlo cuando quieras. Nada sale de tu dispositivo sin tu permiso.</p>
     </section>
 
     <!-- ============ HOME (con perfil) ============ -->
     <section id="home" class="hidden">
-      <h1 id="home-title">Tu perfil está listo</h1>
-      <p class="sub">Cuando llegues a un restaurante adherido, escanea el QR de tu mesa con la cámara del móvil: te traerá de vuelta aquí con todo preparado.</p>
+      <h1 class="reveal" style="--i:0">Tu perfil está <span class="grad">listo</span></h1>
+      <p class="sub reveal" style="--i:1">Cuando llegues a un restaurante adherido, escanea el QR de tu mesa con la cámara del móvil: te traerá de vuelta aquí con todo preparado.</p>
 
-      <div class="card soft">
+      <div class="card soft reveal" style="--i:2">
         <div class="row" style="padding:0 0 8px">
           <h2 style="margin:0">Mi perfil</h2>
           <button id="editar" class="btn ghost small">Editar</button>
         </div>
         <div id="perfil-chips" class="chips" style="margin-bottom:10px"></div>
-        <div id="perfil-detalle" class="hint"></div>
+        <div id="perfil-detalle" class="hint" style="color:var(--muted);font-size:0.85rem"></div>
       </div>
 
-      <div class="card">
+      <div class="card live reveal" style="--i:3">
         <h2>¿Estás ya en la mesa?</h2>
-        <p class="hint" style="margin-bottom:12px">Si no puedes escanear el QR, introduce el código del local que verás en la cartelería.</p>
+        <p class="hint" style="color:var(--muted);font-size:0.85rem;margin-bottom:12px">Si no puedes escanear el QR, introduce el código del local que verás en la cartelería.</p>
         <label class="field" for="codigo-local">Código del local</label>
         <input id="codigo-local" type="text" placeholder="ej. la-nonna" autocapitalize="none" autocomplete="off" />
         <label class="field" for="num-mesa">Número de mesa</label>
         <input id="num-mesa" type="text" inputmode="numeric" placeholder="ej. 4" />
-        <div style="height:14px"></div>
+        <div style="height:16px"></div>
         <button id="ir-aviso" class="btn">Preparar aviso a cocina</button>
       </div>
 
-      <h2 style="margin:22px 0 10px">Tus últimos avisos</h2>
-      <div id="historial" class="list"></div>
+      <h2 class="reveal" style="--i:4; margin:24px 0 12px">Tus últimos avisos</h2>
+      <div id="historial" class="list reveal" style="--i:5"></div>
 
       <p class="always-note">Recuerda: el aviso <strong>complementa, no sustituye,</strong> avisar a tu camarero en persona.</p>
     </section>
-
-    <nav class="footer-nav">
-      <a href="locales.html">Locales adheridos</a>
-      <a href="sala.html">Soy un restaurante</a>
-    </nav>
   </div>
+
+  <nav class="tabbar">
+    <a href="index.html" class="on">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 19.5c1.6-3.2 4-4.6 7-4.6s5.4 1.4 7 4.6"/></svg>
+      Perfil
+    </a>
+    <a href="locales.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 21s-6.5-5.4-6.5-10a6.5 6.5 0 0 1 13 0c0 4.6-6.5 10-6.5 10z"/><circle cx="12" cy="10.6" r="2.3"/></svg>
+      Locales
+    </a>
+    <a href="sala.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 9.5a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6"/><path d="M10 19a2.2 2.2 0 0 0 4 0"/></svg>
+      Sala
+    </a>
+  </nav>
 
   <script src="js/config.js"></script>
   <script type="module" src="js/index.js"></script>

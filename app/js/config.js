@@ -8,7 +8,7 @@
 // puede confirmarlos desde otra pestaña del mismo dispositivo. Perfecto
 // para enseñar el flujo completo a un restaurante piloto sin montar nada.
 window.APP_CONFIG = {
-  appName: 'Salvia',
+  appName: 'Aliva',
   tagline: 'Come tranquilo',
   supabaseUrl: '',
   supabaseAnonKey: '',

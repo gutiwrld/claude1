@@ -1,9 +1,15 @@
-# Salvia 🌿 — Perfil de alergias y aviso a cocina vía QR
+# Aliva ✦ — Perfil de alergias y aviso a cocina vía QR
 
 MVP Wizard of Oz del modelo descrito en [`../modelo-negocio.md`](../modelo-negocio.md) (v2, pivot del 14/07/2026).
 Stack: HTML/CSS/JS vanilla + Supabase. Sin frameworks, sin build: se sirve tal cual.
 
-> El nombre "Salvia" es provisional: cámbialo en `js/config.js` (`appName`) y en los `<title>`.
+> Marca: **Aliva** (decidido el 14/07/2026). Si algún día cambia, se ajusta en `js/config.js`
+> (`appName`) y en los `<title>` de las 4 páginas.
+
+Diseño: tema oscuro premium (referencias Opal/Revolut) — fondo aurora animado en canvas, orbe
+de identidad con gradiente cónico animado (`@property`), tarjetas de cristal (`backdrop-filter`),
+transiciones entre páginas con la View Transitions API, reveals en cascada (IntersectionObserver)
+y partículas en la confirmación. Todo respeta `prefers-reduced-motion`.
 
 ## Qué hace
 

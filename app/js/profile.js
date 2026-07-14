@@ -6,8 +6,8 @@
 // (mesa + alérgenos + gravedad), sin nombre, y siempre con consentimiento
 // explícito del usuario en ese momento.
 
-const KEY_PERFIL = 'salvia_perfil';
-const KEY_HISTORIAL = 'salvia_historial';
+const KEY_PERFIL = 'aliva_perfil';
+const KEY_HISTORIAL = 'aliva_historial';
 
 export function getPerfil() {
   try {

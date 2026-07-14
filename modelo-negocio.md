@@ -327,6 +327,10 @@ es **bloqueante en calendario**: ningún aviso con datos reales antes de cerrar 
   análisis anterior (sustituto gratis, falsa seguridad, RGPD, quién paga) no se descartan: se convierten en los
   experimentos EC-1, EC-3, EC-4 y EC-5 y en los riesgos R1–R2, con criterios de kill explícitos.
 
+- **14/07/2026 — Naming e identidad: "Aliva".** Marca elegida por el fundador. Identidad visual: tema oscuro
+  premium (referencias Opal/Revolut), orbe aurora como símbolo, verdes menta/lavanda, sin iconografía de peligro.
+  Pendiente antes de invertir en marca: comprobar disponibilidad de dominio y de marca en OEPM/EUIPO.
+
 ## 9. Qué me tienes que confirmar antes de la Fase 2
 
 1. **Alcance del aviso:** ¿confirmas el diseño "aviso sin nombre" (mesa + alérgenos + gravedad + elaboración

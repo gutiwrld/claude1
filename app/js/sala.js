@@ -1,10 +1,11 @@
 import { nombreAlergeno, iconoAlergeno, nombreGravedad } from './data.js';
 import { getLocal, verificarPin, onAvisosLocal, confirmarAviso } from './store.js';
+import { initPage } from './fx.js';
 
 const $ = (id) => document.getElementById(id);
-document.querySelectorAll('[data-brand]').forEach((el) => (el.textContent = window.APP_CONFIG.appName));
+initPage();
 
-const SESION_KEY = 'salvia_sala_sesion';
+const SESION_KEY = 'aliva_sala_sesion';
 let stopWatch = null;
 
 // Sesión recordada en el dispositivo del local.

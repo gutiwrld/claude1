@@ -1,7 +1,7 @@
 import { ALERGENOS, GRAVEDADES, nombreAlergeno, iconoAlergeno, nombreGravedad } from './data.js';
-import { getPerfil, setPerfil, getHistorial } from './profile.js';
-import { DEMO_MODE } from './store.js';
-import { initPage } from './fx.js';
+import { getPerfil, setPerfil, getHistorial, yaValorado, marcarValorado } from './profile.js';
+import { DEMO_MODE, crearValoracion } from './store.js';
+import { initPage, celebrate } from './fx.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -109,6 +109,7 @@ function renderHome(p) {
 function renderHistorial() {
   const h = getHistorial();
   const cont = $('historial');
+  cont.innerHTML = '';
   if (h.length === 0) {
     cont.innerHTML = '<div class="item"><span class="meta">Aún no has enviado ningún aviso. Tu historial aparecerá aquí.</span></div>';
     return;
@@ -125,6 +126,54 @@ function renderHistorial() {
         <span class="badge ${e.estado}">${e.estado === 'confirmado' ? 'Confirmado' : 'Enviado'}</span>
       </div>
       <div class="meta">Mesa ${e.mesa} · ${fecha}</div>`;
+
+    // Solo se puede valorar una visita confirmada y aún no valorada.
+    if (e.avisoId && !yaValorado(e.avisoId) && !e.valorado) {
+      div.appendChild(montarRating(e));
+    }
     cont.appendChild(div);
   }
+}
+
+// Widget de valoración: la pregunta va sobre la regla clave de este modelo,
+// la elaboración segura del plato. Sí envía directo; "Hubo un problema" pide
+// un comentario opcional antes de enviar (queremos entender el fallo).
+function montarRating(entrada) {
+  const box = document.createElement('div');
+  box.className = 'rating';
+  box.innerHTML = `
+    <div class="q">¿Prepararon tu plato de forma segura, respetando tus alérgenos?</div>
+    <div class="acts">
+      <button type="button" class="si">Sí, todo bien</button>
+      <button type="button" class="no">Hubo un problema</button>
+    </div>
+    <div class="extra hidden">
+      <textarea placeholder="¿Qué pasó? (opcional, ayuda a otros comensales)"></textarea>
+      <div style="height:9px"></div>
+      <button type="button" class="btn small enviar-no">Enviar valoración</button>
+    </div>`;
+
+  const acts = box.querySelector('.acts');
+  const extra = box.querySelector('.extra');
+
+  const enviar = async (cumplio, comentario, anchor) => {
+    box.innerHTML = '<div class="gracias">Gracias 🌿 Tu valoración ayuda a la comunidad.</div>';
+    try {
+      await crearValoracion({ localSlug: entrada.localSlug, avisoId: entrada.avisoId, cumplio, comentario });
+      marcarValorado(entrada.avisoId);
+      if (cumplio) celebrate(anchor || box);
+    } catch {
+      box.innerHTML = '<div class="q">No se pudo enviar la valoración. Inténtalo más tarde.</div>';
+    }
+  };
+
+  box.querySelector('.si').onclick = (ev) => enviar(true, '', ev.target);
+  box.querySelector('.no').onclick = () => {
+    acts.querySelector('.no').classList.add('sel');
+    extra.classList.remove('hidden');
+    extra.querySelector('textarea').focus();
+  };
+  box.querySelector('.enviar-no').onclick = () => enviar(false, extra.querySelector('textarea').value.trim());
+
+  return box;
 }

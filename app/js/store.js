@@ -6,6 +6,8 @@
 // aviso además se reenvía por WhatsApp al receptor de sala vía n8n
 // (webhook sobre INSERT en la tabla avisos).
 
+import { calcularBadge } from './badge.js';
+
 const cfg = window.APP_CONFIG;
 export const DEMO_MODE = !(cfg.supabaseUrl && cfg.supabaseAnonKey);
 
@@ -27,6 +29,7 @@ const DEMO_LOCALES = [
 ];
 
 const KEY_AVISOS = 'aliva_demo_avisos';
+const KEY_VALORACIONES = 'aliva_demo_valoraciones';
 
 function demoAvisos() {
   try {
@@ -38,6 +41,42 @@ function demoAvisos() {
 
 function demoSaveAvisos(avisos) {
   localStorage.setItem(KEY_AVISOS, JSON.stringify(avisos));
+}
+
+// Valoraciones de ejemplo para que el demo muestre distintos niveles de
+// insignia desde el primer momento. Se siembran una sola vez; las que cree
+// el usuario al valorar sus visitas se añaden a la misma lista.
+function seedValoraciones() {
+  const dias = (n) => new Date(Date.now() - n * 24 * 3600 * 1000).toISOString();
+  const gen = (slug, pos, neg, spread) => {
+    const out = [];
+    for (let i = 0; i < pos; i++) out.push({ id: `seed-${slug}-p${i}`, local_slug: slug, aviso_id: null, cumplio: true, comentario: '', created_at: dias((i * spread) % 120) });
+    for (let i = 0; i < neg; i++) out.push({ id: `seed-${slug}-n${i}`, local_slug: slug, aviso_id: null, cumplio: false, comentario: '', created_at: dias(((i + 1) * spread) % 90) });
+    return out;
+  };
+  return [
+    ...gen('la-nonna', 22, 1, 4),   // Refugio de la comunidad
+    ...gen('casa-vera', 9, 1, 8),   // De confianza
+    ...gen('alba-brunch', 4, 1, 14), // Valorado por la comunidad
+  ];
+}
+
+function demoValoraciones() {
+  try {
+    const raw = localStorage.getItem(KEY_VALORACIONES);
+    if (raw === null) {
+      const seed = seedValoraciones();
+      localStorage.setItem(KEY_VALORACIONES, JSON.stringify(seed));
+      return seed;
+    }
+    return JSON.parse(raw) || [];
+  } catch {
+    return [];
+  }
+}
+
+function demoSaveValoraciones(vals) {
+  localStorage.setItem(KEY_VALORACIONES, JSON.stringify(vals));
 }
 
 // ---------- API ----------
@@ -181,4 +220,62 @@ export function onAvisosLocal(localSlug, callback) {
     clearInterval(interval);
     if (channel) sb().then((s) => s.removeChannel(channel));
   };
+}
+
+// ---------- Valoraciones e insignias ----------
+
+// Crea una valoración de una visita. `cumplio`: ¿prepararon el plato de forma
+// segura (elaboración separada, respetando los alérgenos)? Una por aviso.
+export async function crearValoracion({ localSlug, avisoId, cumplio, comentario }) {
+  const val = {
+    id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+    local_slug: localSlug,
+    aviso_id: avisoId || null,
+    cumplio: !!cumplio,
+    comentario: (comentario || '').slice(0, 280),
+    created_at: new Date().toISOString(),
+  };
+  if (DEMO_MODE) {
+    const vals = demoValoraciones();
+    vals.unshift(val);
+    demoSaveValoraciones(vals);
+    return val;
+  }
+  const s = await sb();
+  const { data, error } = await s.from('valoraciones').insert({
+    local_slug: val.local_slug,
+    aviso_id: val.aviso_id,
+    cumplio: val.cumplio,
+    comentario: val.comentario,
+  }).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getValoraciones(localSlug) {
+  if (DEMO_MODE) return demoValoraciones().filter((v) => v.local_slug === localSlug);
+  const s = await sb();
+  const { data, error } = await s.from('valoraciones').select('cumplio,comentario,created_at').eq('local_slug', localSlug).order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+// Insignia de un local (nivel + estadísticas).
+export async function getBadge(localSlug) {
+  return calcularBadge(await getValoraciones(localSlug));
+}
+
+// Insignias de varios locales de una sola vez (para la lista de locales).
+export async function getBadgesMap(slugs) {
+  const map = {};
+  if (DEMO_MODE) {
+    const vals = demoValoraciones();
+    for (const slug of slugs) map[slug] = calcularBadge(vals.filter((v) => v.local_slug === slug));
+    return map;
+  }
+  const s = await sb();
+  const { data, error } = await s.from('valoraciones').select('local_slug,cumplio,created_at').in('local_slug', slugs);
+  if (error) throw error;
+  for (const slug of slugs) map[slug] = calcularBadge((data || []).filter((v) => v.local_slug === slug));
+  return map;
 }

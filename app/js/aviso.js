@@ -1,6 +1,7 @@
 import { nombreAlergeno, iconoAlergeno, nombreGravedad } from './data.js';
 import { getPerfil, addHistorial, updateHistorial } from './profile.js';
-import { getLocal, crearAviso, onAviso } from './store.js';
+import { getLocal, crearAviso, onAviso, getBadge } from './store.js';
+import { insigniaHeroHTML } from './badge.js';
 import { initPage, celebrate } from './fx.js';
 
 const $ = (id) => document.getElementById(id);
@@ -32,6 +33,11 @@ async function init() {
   $('sub-mesa').textContent = mesa
     ? `Mesa ${mesa} · ${local.barrio || ''}`
     : (local.barrio || '');
+
+  // Insignia del local: reputación de la comunidad ANTES de enviar.
+  getBadge(local.slug).then((badge) => {
+    $('insignia-local').innerHTML = insigniaHeroHTML(badge);
+  }).catch(() => {});
 
   const chips = $('resumen-chips');
   for (const id of perfil.alergenos) {

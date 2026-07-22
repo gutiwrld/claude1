@@ -445,6 +445,120 @@ label.field { display: block; font-size: 0.85rem; font-weight: 500; color: var(-
 }
 .tabbar a.on svg { color: var(--mint); filter: drop-shadow(0 0 8px rgba(111, 232, 185, 0.6)); }
 
+/* ---------- Insignias de comunidad ---------- */
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  white-space: nowrap;
+}
+.insignia .star { font-size: 0.72rem; letter-spacing: -1px; }
+
+.insignia.b-nuevo { color: var(--muted); }
+.insignia.b-revision {
+  color: var(--amber);
+  background: rgba(240, 181, 98, 0.1);
+  border-color: rgba(240, 181, 98, 0.32);
+}
+.insignia.b-valorado {
+  color: var(--mint);
+  background: rgba(111, 232, 185, 0.08);
+  border-color: rgba(111, 232, 185, 0.28);
+}
+.insignia.b-confianza {
+  color: var(--mint);
+  border: 1px solid transparent;
+  background:
+    linear-gradient(rgba(13, 34, 26, 0.92), rgba(13, 34, 26, 0.92)) padding-box,
+    var(--aurora) border-box;
+}
+.insignia.b-refugio {
+  color: #06231a;
+  border: none;
+  background: var(--aurora);
+  box-shadow: 0 0 18px rgba(111, 232, 185, 0.35);
+}
+
+/* Insignia grande (cabecera de aviso y panel de sala) */
+.insignia-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--glass);
+}
+.insignia-hero .medal {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #06231a;
+  background: var(--aurora);
+}
+.insignia-hero.b-nuevo .medal { background: rgba(255,255,255,0.1); color: var(--muted); }
+.insignia-hero.b-revision .medal { background: rgba(240, 181, 98, 0.9); color: #241704; }
+.insignia-hero.b-refugio .medal {
+  animation: spin 7s linear infinite;
+  background: conic-gradient(from var(--angle), #6fe8b9, #a5b4fc, #f4c48f, #34c99a, #6fe8b9);
+  box-shadow: 0 0 26px rgba(111, 232, 185, 0.5);
+}
+.insignia-hero .txt { flex: 1; min-width: 0; }
+.insignia-hero .nom { font-weight: 600; font-size: 0.98rem; }
+.insignia-hero .det { color: var(--muted); font-size: 0.82rem; margin-top: 2px; }
+
+/* ---------- Valoración de una visita ---------- */
+.rating {
+  border-top: 1px dashed var(--line);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+.rating .q { font-size: 0.86rem; font-weight: 500; margin-bottom: 10px; }
+.rating .acts { display: flex; gap: 9px; }
+.rating .acts button {
+  flex: 1;
+  padding: 11px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 0.87rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.rating .acts button:active { transform: scale(0.96); }
+.rating .acts button.si.sel { border-color: transparent; background: rgba(111, 232, 185, 0.16); color: var(--mint); }
+.rating .acts button.no.sel { border-color: rgba(240, 181, 98, 0.4); background: rgba(240, 181, 98, 0.14); color: var(--amber); }
+.rating .extra { margin-top: 10px; }
+.rating .extra textarea {
+  width: 100%;
+  min-height: 62px;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 0.9rem;
+  resize: vertical;
+  outline: none;
+}
+.rating .extra textarea:focus { border-color: rgba(111, 232, 185, 0.5); }
+.rating .gracias { color: var(--mint); font-size: 0.86rem; font-weight: 600; padding: 4px 0; }
+
 /* ---------- Accesibilidad: menos movimiento ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }

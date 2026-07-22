@@ -43,3 +43,28 @@ export function updateHistorial(avisoId, cambios) {
     localStorage.setItem(KEY_HISTORIAL, JSON.stringify(h));
   }
 }
+
+// Solo se puede valorar una visita (un aviso) una vez desde este dispositivo.
+// Esto, sumado a que la valoración va ligada a un aviso real, es la barrera
+// anti-trampa: no puedes valorar un sitio donde no has comido.
+const KEY_VALORADOS = 'aliva_valorados';
+
+export function yaValorado(avisoId) {
+  try {
+    return (JSON.parse(localStorage.getItem(KEY_VALORADOS)) || []).includes(avisoId);
+  } catch {
+    return false;
+  }
+}
+
+export function marcarValorado(avisoId) {
+  let lista = [];
+  try {
+    lista = JSON.parse(localStorage.getItem(KEY_VALORADOS)) || [];
+  } catch {
+    lista = [];
+  }
+  if (!lista.includes(avisoId)) lista.push(avisoId);
+  localStorage.setItem(KEY_VALORADOS, JSON.stringify(lista));
+  updateHistorial(avisoId, { valorado: true });
+}

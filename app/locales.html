@@ -47,26 +47,33 @@
 
   <script src="js/config.js"></script>
   <script type="module">
-    import { getLocales } from './js/store.js';
+    import { getLocales, getBadgesMap } from './js/store.js';
+    import { insigniaChipHTML } from './js/badge.js';
     import { initPage } from './js/fx.js';
     initPage();
 
     const lista = document.getElementById('lista');
-    getLocales().then((locales) => {
+    getLocales().then(async (locales) => {
       if (!locales.length) {
         lista.innerHTML = '<div class="item"><span class="meta">Todavía no hay locales adheridos en tu zona.</span></div>';
         return;
       }
+      let badges = {};
+      try { badges = await getBadgesMap(locales.map((l) => l.slug)); } catch {}
+      // Ordena: mejor reputación primero.
+      const orden = ['refugio', 'confianza', 'valorado', 'nuevo', 'revision'];
+      locales.sort((a, b) => orden.indexOf(badges[a.slug]?.id) - orden.indexOf(badges[b.slug]?.id));
       locales.forEach((l, i) => {
+        const badge = badges[l.slug];
         const div = document.createElement('div');
         div.className = 'item reveal in';
         div.style.transitionDelay = `${i * 90}ms`;
         div.innerHTML = `
           <div class="head">
             <span class="t">${l.nombre}</span>
-            <span class="badge adherido">Adherido</span>
+            ${badge ? insigniaChipHTML(badge) : '<span class="badge adherido">Adherido</span>'}
           </div>
-          <div class="meta">${[l.barrio, l.direccion].filter(Boolean).join(' · ')}</div>
+          <div class="meta" style="margin-top:6px">${[l.barrio, l.direccion].filter(Boolean).join(' · ')}</div>
           <div class="meta">Código: <strong>${l.slug}</strong></div>`;
         lista.appendChild(div);
       });

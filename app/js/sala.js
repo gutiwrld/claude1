@@ -1,5 +1,6 @@
 import { nombreAlergeno, iconoAlergeno, nombreGravedad } from './data.js';
-import { getLocal, verificarPin, onAvisosLocal, confirmarAviso } from './store.js';
+import { getLocal, verificarPin, onAvisosLocal, confirmarAviso, getBadge } from './store.js';
+import { insigniaHeroHTML, siguienteNivel } from './badge.js';
 import { initPage } from './fx.js';
 
 const $ = (id) => document.getElementById(id);
@@ -35,8 +36,24 @@ async function abrirPanel(slug) {
   $('panel').classList.remove('hidden');
   $('panel-titulo').textContent = local.nombre;
 
+  mostrarInsignia(slug);
   if (stopWatch) stopWatch();
   stopWatch = onAvisosLocal(slug, render);
+}
+
+// La insignia del propio local + cuánto falta para el siguiente nivel:
+// convierte la reputación de comunidad en un objetivo tangible para el equipo.
+async function mostrarInsignia(slug) {
+  try {
+    const badge = await getBadge(slug);
+    $('insignia-sala').innerHTML = insigniaHeroHTML(badge);
+    const sig = siguienteNivel(badge);
+    $('progreso-sala').textContent = sig
+      ? `Os faltan ${sig.faltan} ${sig.unidad} para "${sig.objetivo}". La ganan vuestros clientes cuando confirman que les cuidasteis bien.`
+      : (badge.id === 'refugio'
+          ? 'Nivel máximo. Mantenedlo: la insignia baja si llegan valoraciones negativas.'
+          : 'La insignia refleja lo que valora la comunidad y puede bajar si hay incidencias.');
+  } catch {}
 }
 
 function render(avisos) {

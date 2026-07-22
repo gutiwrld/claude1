@@ -247,6 +247,10 @@ más dudosa y se testea con dinero.
 4. **Mapa de adheridos:** página simple con los locales activos, su tiempo medio de confirmación (público: presión
    sana) y su protocolo.
 5. **Onboarding B2B:** visita única de 30 min (protocolo + QRs + cartelería). Todo lo demás, remoto.
+6. **Insignias de comunidad:** tras cada visita confirmada, el usuario valora si le prepararon el plato de forma
+   segura; las valoraciones forman la insignia pública del local (Recién adherido → Valorado → De confianza →
+   Refugio de la comunidad, con "En revisión" si baja). Es la prueba social que sustituye al sello autodeclarado y
+   da al restaurante un objetivo tangible. En el WoZ no hace falta nada extra: la valoración vive en la misma app.
 
 **Lo que NO se hace en el WoZ:** app nativa ni notificaciones push propias (WhatsApp ya existe), panel de
 restaurante (WhatsApp), pagos online (factura a mano), integración TPV, multi-idioma, y **ningún aviso con datos
@@ -287,7 +291,13 @@ app muestra en grande "avisa en persona"; (b) recordatorio "complementa, no sust
 locales con protocolo formado y receptor nombrado pueden estar en la red (antisegmento respetado a rajatabla);
 (d) locales con tiempos de confirmación malos pierden el distintivo automáticamente; (e) seguro RC + wording
 jurídico (EC-4) antes del primer aviso real; (f) el flag "requiere elaboración separada" se comunica como petición
-registrada, jamás como garantía cumplida.
+registrada, jamás como garantía cumplida; (g) **las insignias de comunidad son un nuevo vector de este mismo
+riesgo** y se diseñan en consecuencia: una insignia alta ("Refugio de la comunidad") puede inducir a bajar la
+guardia, así que nunca promete seguridad (solo reputación de otros comensales), la app mantiene el "avisa en
+persona" incluso con la insignia máxima, y la insignia **baja** a "En revisión" ante valoraciones negativas para no
+fosilizar una reputación que ya no se cumple. Riesgo secundario de las insignias: **manipulación** (un local que se
+autovalora) — mitigado porque toda valoración va ligada a un aviso real y hay una por visita; a escala habrá que
+vigilar patrones y, si hace falta, ponderar por antigüedad de la cuenta o verificación ligera del usuario.
 
 ### R2 · El restaurante no paga por recibir avisos (el más probable)
 Para el local, cada aviso es trabajo en el peor momento (hora punta) y responsabilidad por escrito. El hostelero
@@ -330,6 +340,16 @@ es **bloqueante en calendario**: ningún aviso con datos reales antes de cerrar 
 - **14/07/2026 — Naming e identidad: "Aliva".** Marca elegida por el fundador. Identidad visual: tema oscuro
   premium (referencias Opal/Revolut), orbe aurora como símbolo, verdes menta/lavanda, sin iconografía de peligro.
   Pendiente antes de invertir en marca: comprobar disponibilidad de dominio y de marca en OEPM/EUIPO.
+- **22/07/2026 — Insignias de comunidad (badges).** Añadido un sistema por el que los comensales alérgicos avalan al
+  restaurante: tras un aviso confirmado, el usuario valora si le prepararon el plato de forma segura, y las
+  valoraciones componen una insignia pública (Recién adherido → Valorado → De confianza → Refugio de la comunidad,
+  con estado "En revisión" si cae). Encaja con el modelo porque es **prueba social con evidencia de uso real**, no
+  autodeclaración, y refuerza dos activos: retención B2C (participar en la comunidad) y venta B2B (la insignia es un
+  objetivo tangible y un argumento de marketing: "gánate el sello de las familias alérgicas de tu barrio").
+  **Reglas de diseño impuestas para no crear riesgo:** (1) la insignia refleja reputación, nunca seguridad —los
+  mensajes de "avisa en persona" se mantienen aun en el nivel máximo; (2) puede bajar (una racha negativa la degrada
+  a "En revisión"), a diferencia de una reseña; (3) anti-trampa: una valoración solo cuenta ligada a un aviso real y
+  una por visita. Ver nota de riesgo en R1.
 
 ## 9. Qué me tienes que confirmar antes de la Fase 2
 

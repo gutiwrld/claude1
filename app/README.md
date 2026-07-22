@@ -20,9 +20,38 @@ y partículas en la confirmación. Todo respeta `prefers-reduced-motion`.
   qué se enviará (sin nombre), pide consentimiento explícito, envía el aviso y espera la
   confirmación de sala en tiempo real. Si en 5 minutos nadie confirma, pide al usuario que avise
   en persona (requisito anti-falsa-seguridad; configurable en `js/config.js`).
-- **`sala.html`** — panel para el restaurante (código de local + PIN): avisos pendientes y botón
-  "Confirmar: sala y cocina enterados". En el piloto real esto se complementa con WhatsApp vía n8n.
-- **`locales.html`** — lista pública de locales adheridos.
+- **`sala.html`** — panel para el restaurante (código de local + PIN): su insignia de comunidad
+  con el progreso al siguiente nivel, avisos pendientes y botón "Confirmar: sala y cocina
+  enterados". En el piloto real esto se complementa con WhatsApp vía n8n.
+- **`locales.html`** — lista pública de locales adheridos, ordenada por insignia de comunidad.
+
+## Insignias de comunidad (`js/badge.js`)
+
+Los propios comensales alérgicos avalan a un restaurante. Tras una visita confirmada, el usuario
+valora desde su historial: **¿prepararon tu plato de forma segura, respetando tus alérgenos?**
+Esas valoraciones componen la insignia del local, con cinco estados:
+
+| Insignia | Cómo se obtiene |
+|---|---|
+| **Recién adherido** | Adherido, aún sin valoraciones suficientes (< 3) |
+| **Valorado por la comunidad** | ≥ 3 valoraciones, mayoría positivas |
+| **De confianza** | ≥ 8 positivas y ≥ 82 % de aciertos |
+| **Refugio de la comunidad** | ≥ 20 positivas y ≥ 90 % de aciertos |
+| **En revisión** ⚠️ | La insignia **baja** aquí si el ratio cae por debajo del 65 % |
+
+Tres reglas de diseño **no negociables** (ver comentarios en `badge.js`):
+
+1. **La insignia refleja reputación, no seguridad.** Nunca promete "seguro para ti hoy". Los
+   mensajes de "avisa siempre en persona" se mantienen incluso en el nivel máximo.
+2. **Puede bajar.** Una racha de valoraciones negativas la degrada a "En revisión". Eso la separa
+   de una reseña de Google, que solo sube.
+3. **Anti-trampa.** Una valoración solo cuenta si va ligada a un aviso real enviado desde ese
+   dispositivo, y solo una por visita (constraint `unique(aviso_id)` en Supabase; registro local
+   `aliva_valorados` en modo demo). No puedes valorar un sitio donde no has comido.
+
+> Los umbrales están calibrados para escala piloto en `badge.js`; súbelos al crecer la red. La
+> ponderación por recencia (que una insignia sin valoraciones recientes pierda fuerza) está
+> anotada como mejora futura: hoy se muestra el nº de valoraciones recientes pero no altera el nivel.
 
 ## Modo demo (sin configurar nada)
 
@@ -33,7 +62,11 @@ Si no rellenas Supabase en `js/config.js`, la app funciona con datos en el naveg
 3. Usa el código de local `la-nonna` y una mesa, y envía el aviso.
 4. Abre `sala.html` **en otra pestaña del mismo navegador**, entra con `la-nonna` / PIN `1234`
    y confirma: verás la confirmación llegar a la pestaña del cliente.
+5. Vuelve a `index.html`: en "Tus últimos avisos" aparece la valoración de esa visita. Al
+   responder, la insignia del local se actualiza (visible en `locales.html` y `aviso.html`).
 
+El demo llega con tres locales sembrados en distintos niveles de insignia (`la-nonna` = Refugio,
+`casa-vera` = De confianza, `alba-brunch` = Valorado) para enseñar el sistema de un vistazo.
 Perfecto para enseñar el flujo completo a un restaurante piloto sin montar backend.
 
 ## Modo real (Supabase)

@@ -44,6 +44,56 @@ export function updateHistorial(avisoId, cambios) {
   }
 }
 
+// ---------- Selección (el pedido que el cliente monta desde la carta) ----------
+// Vive en el dispositivo mientras el cliente navega la carta. Cada item guarda
+// el plato y de qué alérgenos lo quiere "sin". Se limpia al enviar el aviso.
+const KEY_SELECCION = 'aliva_seleccion';
+
+export function getSeleccion() {
+  try {
+    return JSON.parse(localStorage.getItem(KEY_SELECCION));
+  } catch {
+    return null;
+  }
+}
+
+// Asegura que la selección corresponde a este local y mesa; si cambia de
+// local, empieza de cero (no mezclamos pedidos de restaurantes distintos).
+export function contextoSeleccion(localSlug, mesa) {
+  const s = getSeleccion();
+  if (!s || s.localSlug !== localSlug) {
+    const nueva = { localSlug, mesa, items: [] };
+    localStorage.setItem(KEY_SELECCION, JSON.stringify(nueva));
+    return nueva;
+  }
+  if (mesa && s.mesa !== mesa) {
+    s.mesa = mesa;
+    localStorage.setItem(KEY_SELECCION, JSON.stringify(s));
+  }
+  return s;
+}
+
+export function setItemSeleccion(item) {
+  const s = getSeleccion() || { localSlug: item.localSlug, mesa: item.mesa, items: [] };
+  const i = s.items.findIndex((x) => x.dishId === item.dishId);
+  if (i >= 0) s.items[i] = item;
+  else s.items.push(item);
+  localStorage.setItem(KEY_SELECCION, JSON.stringify(s));
+  return s;
+}
+
+export function quitarItemSeleccion(dishId) {
+  const s = getSeleccion();
+  if (!s) return null;
+  s.items = s.items.filter((x) => x.dishId !== dishId);
+  localStorage.setItem(KEY_SELECCION, JSON.stringify(s));
+  return s;
+}
+
+export function limpiarSeleccion() {
+  localStorage.removeItem(KEY_SELECCION);
+}
+
 // Solo se puede valorar una visita (un aviso) una vez desde este dispositivo.
 // Esto, sumado a que la valoración va ligada a un aviso real, es la barrera
 // anti-trampa: no puedes valorar un sitio donde no has comido.

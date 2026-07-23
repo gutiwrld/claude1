@@ -1,5 +1,5 @@
 import { nombreAlergeno, iconoAlergeno, nombreGravedad } from './data.js';
-import { getPerfil, addHistorial, updateHistorial } from './profile.js';
+import { getPerfil, addHistorial, updateHistorial, getSeleccion, limpiarSeleccion } from './profile.js';
 import { getLocal, crearAviso, onAviso, getBadge } from './store.js';
 import { insigniaHeroHTML } from './badge.js';
 import { initPage, celebrate } from './fx.js';
@@ -51,6 +51,19 @@ async function init() {
   if (perfil.separada) detalles.push('requiere elaboración separada');
   $('resumen-detalle').textContent = detalles.join(' · ');
 
+  // Pedido montado desde la carta (si existe para este local).
+  const sel = getSeleccion();
+  const pedido = (sel && sel.localSlug === local.slug) ? sel.items : [];
+  if (pedido.length) {
+    $('pedido-card').classList.remove('hidden');
+    $('pedido-lista').innerHTML = pedido.map((it) => `
+      <div class="item">
+        <div class="t">${it.nombre}</div>
+        ${it.sin && it.sin.length ? `<div class="meta">sin ${it.sin.map(nombreAlergeno).join(', ')}</div>` : '<div class="meta">tal cual en la carta</div>'}
+      </div>`).join('');
+    $('editar-pedido').href = `carta.html?l=${encodeURIComponent(local.slug)}&m=${encodeURIComponent(mesa)}`;
+  }
+
   $('consentimiento').onchange = (e) => ($('enviar').disabled = !e.target.checked);
 
   $('enviar').onclick = async () => {
@@ -64,7 +77,9 @@ async function init() {
         sinTrazas: perfil.sinTrazas,
         gravedad: perfil.gravedad,
         separada: perfil.separada,
+        seleccion: pedido,
       });
+      limpiarSeleccion();
       addHistorial({
         avisoId: aviso.id,
         localSlug: local.slug,

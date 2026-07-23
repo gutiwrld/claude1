@@ -100,7 +100,7 @@ function renderHome(p) {
     const mesa = $('num-mesa').value.trim();
     if (!local) return $('codigo-local').focus();
     if (!mesa) return $('num-mesa').focus();
-    location.href = `aviso.html?l=${encodeURIComponent(local)}&m=${encodeURIComponent(mesa)}`;
+    location.href = `carta.html?l=${encodeURIComponent(local)}&m=${encodeURIComponent(mesa)}`;
   };
 
   renderHistorial();

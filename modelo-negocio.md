@@ -351,6 +351,20 @@ es **bloqueante en calendario**: ningún aviso con datos reales antes de cerrar 
   a "En revisión"), a diferencia de una reseña; (3) anti-trampa: una valoración solo cuenta ligada a un aviso real y
   una por visita. Ver nota de riesgo en R1.
 
+- **23/07/2026 — Carta filtrada + pedido "sin alérgeno".** El QR pasa a abrir la **carta del
+  restaurante filtrada por el perfil del cliente** (cada plato: "encaja contigo" / "se puede
+  adaptar" / "no apto"), con detalle por plato e interruptores "pídelo sin X" para los alérgenos que
+  el local puede quitar. El cliente monta su pedido y el aviso a cocina llega ya con los platos y sus
+  "sin X". **Valor añadido claro para el B2B:** deja de ser solo "recibir un aviso" (que era el punto
+  débil de la venta, R2) y pasa a ser una herramienta que le ahorra trabajo en sala (el pedido llega
+  estructurado) y le da carta digital filtrada incluida — justo lo que cobran Alergenu/Egourmet, pero
+  aquí integrado con el aviso y la insignia. **Misma regla anti-falsa-seguridad:** los alérgenos de
+  la carta son los que *declara el restaurante* (autodeclaración); Aliva los ordena pero no garantiza,
+  y "pídelo sin X" es una petición registrada, no una garantía — avisado en pantalla. Implicación
+  futura: la carta deberá vivir en Supabase (tabla `platos`) y mantenerla actualizada es trabajo del
+  restaurante; si la carta declarada está mal, volvemos al problema original de la v1 (la información
+  errónea), lo que refuerza que la insignia de comunidad y los reportes son el contrapeso.
+
 ## 9. Qué me tienes que confirmar antes de la Fase 2
 
 1. **Alcance del aviso:** ¿confirmas el diseño "aviso sin nombre" (mesa + alérgenos + gravedad + elaboración

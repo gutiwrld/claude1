@@ -16,13 +16,21 @@ y partículas en la confirmación. Todo respeta `prefers-reduced-motion`.
 - **`index.html`** — el usuario crea su perfil de alergias (14 alérgenos UE, trazas, gravedad,
   elaboración separada). El perfil vive **solo en su dispositivo** (localStorage): nunca se sube a
   ningún servidor (minimización RGPD, dato de salud art. 9).
-- **`aviso.html?l=<local>&m=<mesa>`** — la página que abre el QR de cada mesa. Muestra exactamente
+- **`carta.html?l=<local>&m=<mesa>`** — **el destino del QR de cada mesa.** La carta del restaurante
+  **filtrada por el perfil del cliente**: cada plato marcado como "Encaja contigo", "Se puede
+  adaptar" o "No apto", con filtros (Para ti / Se pueden adaptar / Toda la carta). Al tocar un plato
+  se abre su detalle con los alérgenos y los interruptores **"Pídelo sin…"** (los alérgenos que el
+  restaurante puede quitar). El cliente monta su pedido y pasa al aviso. La carta es contenido de
+  prototipo en `js/menu.js` (en producción viviría en la tabla `platos` de Supabase).
+- **`aviso.html?l=<local>&m=<mesa>`** — Muestra exactamente
   qué se enviará (sin nombre), pide consentimiento explícito, envía el aviso y espera la
-  confirmación de sala en tiempo real. Si en 5 minutos nadie confirma, pide al usuario que avise
-  en persona (requisito anti-falsa-seguridad; configurable en `js/config.js`).
+  confirmación de sala en tiempo real. Si el cliente venía de la carta, **incluye su pedido**
+  (platos + "sin X"). Si en 5 minutos nadie confirma, pide al usuario que avise en persona
+  (requisito anti-falsa-seguridad; configurable en `js/config.js`).
 - **`sala.html`** — panel para el restaurante (código de local + PIN): su insignia de comunidad
-  con el progreso al siguiente nivel, avisos pendientes y botón "Confirmar: sala y cocina
-  enterados". En el piloto real esto se complementa con WhatsApp vía n8n.
+  con el progreso al siguiente nivel, avisos pendientes **con el pedido de cada mesa** (platos y
+  sus "sin X") y botón "Confirmar: sala y cocina enterados". En el piloto real esto se complementa
+  con WhatsApp vía n8n.
 - **`locales.html`** — lista pública de locales adheridos, ordenada por insignia de comunidad.
 
 ## Insignias de comunidad (`js/badge.js`)
@@ -113,10 +121,11 @@ Antes de pasar de ~3 locales piloto: autenticación real por local y políticas 
 
 ## QRs de mesa
 
-Cada mesa lleva un QR que apunta a:
+Cada mesa lleva un QR que apunta a la **carta** (el hub desde el que se ve el menú filtrado y se
+avisa a cocina):
 
 ```
-https://TU-DOMINIO/aviso.html?l=<codigo-del-local>&m=<numero-de-mesa>
+https://TU-DOMINIO/carta.html?l=<codigo-del-local>&m=<numero-de-mesa>
 ```
 
 Genera los QRs con cualquier generador (o con la librería `qrcode` en n8n). Un QR por mesa;

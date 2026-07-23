@@ -83,6 +83,14 @@ function tarjeta(a, pendiente) {
   if (a.sin_trazas) detalles.push('no tolera trazas');
   if (a.elaboracion_separada) detalles.push('elaboración separada, solo para esta persona');
 
+  const pedido = a.seleccion || [];
+  const pedidoHTML = pedido.length
+    ? `<div class="sala-pedido">
+         <div class="sala-pedido-t">Pedido de la mesa</div>
+         ${pedido.map((it) => `<div class="sala-plato"><span>${it.nombre}</span>${it.sin && it.sin.length ? `<span class="sin">sin ${it.sin.map(nombreAlergeno).join(', ')}</span>` : ''}</div>`).join('')}
+       </div>`
+    : '';
+
   div.innerHTML = `
     <div class="head">
       <span class="t">Mesa ${a.mesa}</span>
@@ -91,7 +99,8 @@ function tarjeta(a, pendiente) {
     <div class="chips" style="margin:8px 0">
       ${a.alergenos.map((id) => `<span class="chip mini on"><span>${iconoAlergeno(id)}</span>${nombreAlergeno(id)}</span>`).join('')}
     </div>
-    <div class="meta">${detalles.join(' · ')}</div>`;
+    <div class="meta">${detalles.join(' · ')}</div>
+    ${pedidoHTML}`;
 
   if (pendiente) {
     const btn = document.createElement('button');

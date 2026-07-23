@@ -10,21 +10,24 @@
 //
 // Sube CACHE_VERSION al cambiar el armazón para invalidar la caché antigua.
 
-const CACHE_VERSION = 'aliva-v1';
+const CACHE_VERSION = 'aliva-v2';
 const SHELL = [
   './',
   './index.html',
+  './carta.html',
   './aviso.html',
   './sala.html',
   './locales.html',
   './css/styles.css',
   './js/config.js',
   './js/data.js',
+  './js/menu.js',
   './js/profile.js',
   './js/store.js',
   './js/badge.js',
   './js/fx.js',
   './js/index.js',
+  './js/carta.js',
   './js/aviso.js',
   './js/sala.js',
   './manifest.webmanifest',

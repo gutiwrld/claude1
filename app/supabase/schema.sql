@@ -26,6 +26,8 @@ create table if not exists avisos (
   gravedad text not null check (gravedad in ('intolerancia', 'alergia', 'anafilaxia')),
   elaboracion_separada boolean not null default false,
   estado text not null default 'enviado' check (estado in ('enviado', 'confirmado', 'expirado')),
+  -- Pedido que el cliente monta desde la carta: [{dishId, nombre, precio, sin:[alérgenos]}]
+  seleccion jsonb not null default '[]'::jsonb,
   enviado_at timestamptz not null default now(),
   confirmado_at timestamptz
 );

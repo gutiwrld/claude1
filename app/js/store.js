@@ -7,9 +7,16 @@
 // (webhook sobre INSERT en la tabla avisos).
 
 import { calcularBadge } from './badge.js';
+import { getMenuLocal } from './menu.js';
 
 const cfg = window.APP_CONFIG;
 export const DEMO_MODE = !(cfg.supabaseUrl && cfg.supabaseAnonKey);
+
+// La carta es contenido de prototipo (js/menu.js), igual en demo y en real.
+// En producción viviría en Supabase (tabla `platos`).
+export async function getMenu(localSlug) {
+  return getMenuLocal(localSlug);
+}
 
 let _sb = null;
 async function sb() {
@@ -96,7 +103,7 @@ export async function getLocal(slug) {
   return data;
 }
 
-export async function crearAviso({ localSlug, mesa, alergenos, sinTrazas, gravedad, separada }) {
+export async function crearAviso({ localSlug, mesa, alergenos, sinTrazas, gravedad, separada, seleccion }) {
   const aviso = {
     id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
     local_slug: localSlug,
@@ -105,6 +112,7 @@ export async function crearAviso({ localSlug, mesa, alergenos, sinTrazas, graved
     sin_trazas: !!sinTrazas,
     gravedad,
     elaboracion_separada: !!separada,
+    seleccion: seleccion || [],
     estado: 'enviado',
     enviado_at: new Date().toISOString(),
     confirmado_at: null,
@@ -123,6 +131,7 @@ export async function crearAviso({ localSlug, mesa, alergenos, sinTrazas, graved
     sin_trazas: aviso.sin_trazas,
     gravedad: aviso.gravedad,
     elaboracion_separada: aviso.elaboracion_separada,
+    seleccion: aviso.seleccion,
   }).select().single();
   if (error) throw error;
   return data;

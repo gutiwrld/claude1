@@ -1,0 +1,22 @@
+# Despliegue de Aliva como sitio estático propio (no necesita build).
+#
+# Opción A (arrastrar): en Netlify, "Add new site → Deploy manually" y arrastra
+#   esta carpeta `app/`. Listo, tendrás una URL https.
+# Opción B (desde el repo): conecta el repositorio y pon "Base directory" = app
+#   (deja "Build command" vacío y "Publish directory" = . dentro de esa base).
+
+[build]
+  publish = "."
+  command = ""
+
+# El service worker no debe cachearse por CDN: así los usuarios reciben
+# actualizaciones del armazón sin quedarse con una versión vieja pegada.
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"

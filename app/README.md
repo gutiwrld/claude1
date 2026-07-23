@@ -69,10 +69,42 @@ El demo llega con tres locales sembrados en distintos niveles de insignia (`la-n
 `casa-vera` = De confianza, `alba-brunch` = Valorado) para enseñar el sistema de un vistazo.
 Perfecto para enseñar el flujo completo a un restaurante piloto sin montar backend.
 
+## App instalable (PWA)
+
+Aliva es una **PWA**: se instala en el móvil como una app (icono en la pantalla de inicio,
+pantalla completa sin barra del navegador) y **arranca sin conexión** gracias al service worker
+(`service-worker.js` + `manifest.webmanifest`). Requisito: servirla por **https** (o localhost).
+
+- **Android / Chrome / Edge:** aparece un botón flotante "Instalar Aliva"; o menú ⋮ →
+  "Instalar aplicación / Añadir a pantalla de inicio".
+- **iPhone / Safari:** botón Compartir → "Añadir a pantalla de inicio" (iOS no muestra botón
+  automático; usa el `apple-touch-icon` incluido).
+
+Al cambiar el armazón (HTML/CSS/JS), sube `CACHE_VERSION` en `service-worker.js` para que los
+usuarios reciban la versión nueva.
+
+> Tipografía: hoy se carga Outfit desde Google Fonts (falla el estilo offline y envía la IP a
+> Google). Mejora pendiente recomendada para producción: alojar la fuente en `css/` y así ser
+> 100 % offline y sin terceros.
+
+## Publicar (deploy)
+
+No hay build; es estático puro. La forma más rápida de tener una URL https real:
+
+1. **Netlify (arrastrar):** entra en Netlify → *Add new site → Deploy manually* y arrastra esta
+   carpeta `app/`. En segundos tienes `https://<algo>.netlify.app`. (Incluye `netlify.toml` con
+   las cabeceras correctas para el service worker y el manifest.)
+2. **Netlify (desde el repo):** conecta el repositorio y pon *Base directory* = `app`, *Build
+   command* vacío, *Publish directory* = `.`.
+3. Alternativas equivalentes: Vercel, Cloudflare Pages o GitHub Pages (sirviendo la carpeta `app/`).
+
+El `netlify.toml` de la raíz del repo pertenece a otro proyecto; no afecta si despliegas `app/`
+como sitio aparte.
+
 ## Modo real (Supabase)
 
 1. Crea un proyecto en supabase.com y ejecuta `supabase/schema.sql` en el SQL Editor
-   (crea `locales` y `avisos`, políticas RLS abiertas de piloto y Realtime).
+   (crea `locales`, `avisos` y `valoraciones`, políticas RLS abiertas de piloto y Realtime).
 2. Copia Project URL y anon key en `js/config.js`.
 3. Cambia los locales de ejemplo y sus PINs en la tabla `locales`.
 

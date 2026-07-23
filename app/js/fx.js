@@ -134,9 +134,49 @@ export function celebrate(fromEl) {
   requestAnimationFrame(tick);
 }
 
+// ---------- Service worker (PWA) ----------
+// Registra el service worker para que la app se instale y abra offline.
+// Se salta en file:// (donde los SW no funcionan) para no ensuciar la consola.
+function initPWA() {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol === 'file:') return;
+  addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js', { scope: './' }).catch(() => {});
+  });
+}
+
+// Botón flotante "Instalar" que aparece solo si el navegador permite instalar
+// la PWA (Android/Chrome/Edge). En iOS no existe este evento: se instala con
+// Compartir → "Añadir a pantalla de inicio" (explicado en el README).
+function initInstallPrompt() {
+  let deferred = null;
+  addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferred = e;
+    if (document.querySelector('.install-fab')) return;
+    const b = document.createElement('button');
+    b.className = 'install-fab';
+    b.innerHTML = '<span class="orb-dot" style="width:14px;height:14px"></span> Instalar Aliva';
+    b.onclick = async () => {
+      if (!deferred) return;
+      deferred.prompt();
+      await deferred.userChoice.catch(() => {});
+      deferred = null;
+      b.remove();
+    };
+    document.body.appendChild(b);
+  });
+  addEventListener('appinstalled', () => {
+    const b = document.querySelector('.install-fab');
+    if (b) b.remove();
+  });
+}
+
 // ---------- Arranque común de página ----------
 export function initPage() {
   document.querySelectorAll('[data-brand]').forEach((el) => (el.textContent = window.APP_CONFIG.appName));
   initAurora();
   initReveals();
+  initPWA();
+  initInstallPrompt();
 }

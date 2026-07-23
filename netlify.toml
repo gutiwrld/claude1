@@ -1,12 +1,30 @@
+# ⚠️ Este repositorio contiene DOS proyectos:
+#   - raíz  = "Porra del Mundial" (Vite/React) — un proyecto antiguo, aparte.
+#   - app/  = "Aliva" (PWA estática) — es lo que queremos publicar.
+#
+# En ESTA RAMA (la de Aliva) Netlify publica la carpeta app/ tal cual, SIN build.
+# Netlify siempre obedece a este archivo, por encima de lo que pongas en su web,
+# así que no tienes que tocar "build command" ni "publish directory" a mano.
+#
+# 👉 IMPORTANTE al conectar en Netlify: elige desplegar ESTA rama
+#    (claude/allergen-verification-model-4be1mf), NO 'main'.
+#    'main' contiene la porra; esta rama contiene Aliva.
+
 [build]
-  command = "npm run build"
-  publish = "dist"
+  publish = "app"
+  command = "echo 'Aliva es estatica: no hay build'"
 
-[build.environment]
-  NODE_VERSION = "22"
+# El service worker no debe quedarse cacheado por el CDN, para que a los
+# usuarios les lleguen las actualizaciones del armazón.
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache"
 
-# SPA fallback: toda ruta sirve index.html
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+
+# (Aliva es multipágina: NO hay redirect SPA a index.html, para que los
+#  enlaces de los QR como /aviso.html?l=...&m=... funcionen directamente.)

@@ -10,7 +10,7 @@
 //
 // Sube CACHE_VERSION al cambiar el armazón para invalidar la caché antigua.
 
-const CACHE_VERSION = 'aliva-v2';
+const CACHE_VERSION = 'aliva-v3';
 const SHELL = [
   './',
   './index.html',

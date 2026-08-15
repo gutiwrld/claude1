@@ -15,6 +15,10 @@ const BLOBS = [
 ];
 
 export function initAurora() {
+  // El tema claro (BRAND.md) usa fondo paper por CSS; el lienzo oscuro ya no
+  // se pinta. Se deja la función por compatibilidad.
+  return;
+  // eslint-disable-next-line no-unreachable
   const canvas = document.getElementById('bg-aurora');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -97,7 +101,7 @@ export function celebrate(fromEl) {
   document.body.appendChild(canvas);
   const ctx = canvas.getContext('2d');
 
-  const COLORS = ['111,232,185', '165,180,252', '244,196,143', '255,255,255'];
+  const COLORS = ['14,140,99', '87,199,154', '255,202,75', '10,42,34'];
   const parts = Array.from({ length: 70 }, () => {
     const ang = Math.random() * Math.PI * 2;
     const speed = 2 + Math.random() * 5.5;

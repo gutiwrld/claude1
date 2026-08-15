@@ -365,6 +365,15 @@ es **bloqueante en calendario**: ningún aviso con datos reales antes de cerrar 
   restaurante; si la carta declarada está mal, volvemos al problema original de la v1 (la información
   errónea), lo que refuerza que la insignia de comunidad y los reportes son el contrapeso.
 
+- **24/07/2026 — Línea gráfica v1.0 (giro a tema claro).** Se sustituye la estética oscura anterior
+  (Opal/Revolut) por la identidad definitiva de Aliva (`BRAND.md`): marca **clara y calmada**, fondo
+  paper, verde como color dominante, tipografías Bricolage/Hanken/Space Mono, símbolo = módulo QR +
+  check, y tono "alivio, no miedo" (nada alarmista/clínico). Nuevo icono de app aportado por el
+  fundador. Es un rediseño **visual + de tono**, sin tocar rutas, lógica ni modelo de datos. Encaja
+  con el posicionamiento: el producto vende tranquilidad, y el diseño oscuro anterior transmitía lo
+  contrario. Nota de coherencia: los mensajes de seguridad ("avisa siempre en persona", "petición no
+  garantía") se mantienen intactos — calma no es bajar la guardia.
+
 ## 9. Qué me tienes que confirmar antes de la Fase 2
 
 1. **Alcance del aviso:** ¿confirmas el diseño "aviso sin nombre" (mesa + alérgenos + gravedad + elaboración

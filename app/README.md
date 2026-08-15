@@ -4,12 +4,17 @@ MVP Wizard of Oz del modelo descrito en [`../modelo-negocio.md`](../modelo-negoc
 Stack: HTML/CSS/JS vanilla + Supabase. Sin frameworks, sin build: se sirve tal cual.
 
 > Marca: **Aliva** (decidido el 14/07/2026). Si algún día cambia, se ajusta en `js/config.js`
-> (`appName`) y en los `<title>` de las 4 páginas.
+> (`appName`) y en los `<title>` de las 5 páginas.
 
-Diseño: tema oscuro premium (referencias Opal/Revolut) — fondo aurora animado en canvas, orbe
-de identidad con gradiente cónico animado (`@property`), tarjetas de cristal (`backdrop-filter`),
-transiciones entre páginas con la View Transitions API, reveals en cascada (IntersectionObserver)
-y partículas en la confirmación. Todo respeta `prefers-reduced-motion`.
+Diseño: **línea gráfica Aliva v1.0** (ver `../BRAND.md`) — marca clara y calmada ("alivio, no
+miedo"). Fondo `paper` (#F6FAF8, nunca oscuro), verde `#0E8C63` como color dominante, amarillo
+`zest` con cuentagotas, chips de alérgeno en alerta cálida (nunca roja agresiva). Tipografía:
+Bricolage Grotesque (titulares y logotipo), Hanken Grotesk (texto), Space Mono (etiquetas en
+mayúsculas). El símbolo es el módulo QR + check (`assets/brand/`), que también es el estado de
+espera animado. Transiciones con View Transitions API, reveals en cascada y partículas verdes en
+la confirmación. Todo respeta `prefers-reduced-motion`.
+
+Los tokens de marca viven en `:root` de `css/styles.css`; cámbialos ahí y se propagan a toda la app.
 
 ## Qué hace
 
